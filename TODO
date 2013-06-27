@@ -1,0 +1,24 @@
+== TODO list for the FELDRAND ==
+
+* primary goals
+ - [ ] Finish the save load system
+ - [ ] No crashes due to some geomety/speed
+ - [ ] Finish New... mechanism
+ - [ ] Add Lift/Drag widget
+* secondary goals
+ - [ ] add OpenCV image recognition
+ - [ ] sanify simulation internal threading
+ - [ ] use OpenCL for the LBM simulation
+ - [ ] show FPS and steps per second
+ - [ ] sanify coordinates
+   (no ugly borders, only (0,1)x(0,1) coordinates in visualisation)
+ - [ ] let Simulation return SI unit grids
+ - [ ] use OpenMP for parallelisation (but should still work without...)
+ - [ ] use shader programs for visualisation
+   Unfortunately this creates problems with compatibility on some drivers
+ - [ ] build FELDRAND for Mac
+ - [ ] build FELDRAND for Windows
+ - [ ] measure the physical accuracy of the simulation on some scale
+   to achieve guaranteed realtime, drastical (and incorrect) optimisations
+   are sometimes necessary. This makes it transparent how many
+   of these optimisations are active. More a fun feature nontheless.

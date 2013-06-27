@@ -1,0 +1,96 @@
+Copyright (C) 2013  Marco Heisig
+See the end of the file for license conditions.
+
+== FELDRAND ==
+
+= Abstract =
+
+  FELDRAND is a realtime fluid simulator. It works on 2-dimensional domains
+  which contain arbitrarily shaped objects (e.g. wings). It aims to be as
+  simple and user-friendly as a MRT-Lattice-Boltzman simulation can be.
+
+= Structure =
+
+  The heart of the FELDRAND is a library that allows to create simulations
+  with the desired setup and parameters. Once a simulation is created it will
+  asynchronously run a Lattice-Boltzmann simulation on the domain and give
+  access to the resulting velocity and density fields for viualisation or
+  storage.
+
+  A second library is responsible for the realtime visualisation of the
+  simulation data.
+
+  Finally those two libraries are used in the FELDRAND GUI which provides
+  a hopefully easy to use interface to the world of fluids.
+
+= Installation =
+
+  FELDRAND is built via cmake (http://www.cmake.org). To install simply type
+  "cmake DIR" where DIR is where this README resides. You should be awarded
+  with a Makefile. Type "make" to compile and "./bin/feldrand_gui" to run.
+  Important: The code does heavily rely on C++11 features, so you need a
+  reasonably up to date C++ compiler like gcc 4.8
+
+  Used packages:
+  qt4
+  cmake
+
+= History =
+
+  The first version of FELDRAND was written as a project of the Ferienakademie
+  2012 (www.ferienakademie.de). Even under the rough conditions there (many
+  bottles of wine and daily hiking) did the team manage to produce a visually
+  impressive software that was able to simulate the flow around wings of
+  arbitrary geometry in realtime with the ability to capture the wing-shapes
+  via a webcam. The resulting wing-drawing competition (again bottles of
+  wine...) showed the potential of such a software for experimenting with
+  aerodynamics.  That is why the Chair of System Simulation at the
+  FAU-Erlangen-Nürnberg decided to develop a new version of the FELDRAND, this
+  time with sane design and fewer bugs.
+
+= Special thanks =
+
+  The Ferienakademie team:
+  Arash Bakhtiari
+  Marvin Becker
+  Prof. Hans-Joachim Bungartz
+  Daniel Butnaru
+  Dominik Ernst
+  Aditya Ghantasala
+  Marco Heisig
+  Bruno Hümmler
+  Michael Kerscher
+  Nicolas Lachenmaier
+  Benjamin Maier
+  Christop Müller
+  Michael Nierla
+  Carlos Pachajoa Mejia
+  Christoph Rettinger
+  Daniel Ritter
+  Kilian Röhner
+  Nicolai Roth
+  Prof. Ulrich Rüde
+  Nicolai Schaffroth
+  Benjamin Wassermann
+  Sebastian Weber
+  Anna Yurova
+
+= Author =
+
+  Marco Heisig (marco.heisig@fau.de)
+
+
+This file is part of Feldrand.
+
+Feldrand is free software: you can redistribute it and/or modify it under the
+terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
+details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
