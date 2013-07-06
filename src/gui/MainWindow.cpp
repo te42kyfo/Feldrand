@@ -30,7 +30,7 @@ using namespace std;
 namespace Feldrand {
 
 MainWindow::MainWindow() {
-    sim = make_shared<Simulation>(Simulation::create_dwdhgt(16.0, 8.0, 10000));
+    sim = make_shared<Simulation>(Simulation::create_dwdhgt(16.0, 8.0, 20000));
     sim->action(Simulation::Action::run);
 
     using namespace std::chrono;
