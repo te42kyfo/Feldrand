@@ -18,8 +18,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "MainWindow.hpp"
 #include <iostream>
 #include <fstream>
-#include <QtGui>
+#include <QtGui/QLabel>
+#include <QtGui/QHBoxLayout>
+#include <QtGui/QAction>
+#include <QtGui/QMenuBar>
 #include <QFileDialog>
+#include <QTabWidget>
 #include <thread>
 #include "OpenGLWidget.hpp"
 #include "AboutWindow.hpp"
@@ -30,18 +34,25 @@ using namespace std;
 namespace Feldrand {
 
 MainWindow::MainWindow() {
-    sim = make_shared<Simulation>(Simulation::create_dwdhgt(16.0, 8.0, 10000));
+    sim = make_shared<Simulation>(Simulation::create_dwdhgt(32.0, 8.0, 20000));
     sim->action(Simulation::Action::run);
 
     using namespace std::chrono;
-    QWidget *widget = new QWidget;
+    QWidget* widget = new QWidget();
     setCentralWidget(widget);
 
     openGLWidget = new OpenGLWidget;
     openGLWidget->setSimulation(sim);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QTabWidget* tabWidget = new QTabWidget();
+    QWidget* infoTab = new QWidget();
+    QWidget* drawTab = new QWidget();
+    tabWidget->addTab(infoTab, QString("Info"));
+    tabWidget->addTab(drawTab, QString("Draw"));
+
+    QHBoxLayout *layout = new QHBoxLayout();
     layout->addWidget(openGLWidget);
+    layout->addWidget(tabWidget);
     layout->setContentsMargins(0, 0, 0, 0);
     widget->setLayout(layout);
 

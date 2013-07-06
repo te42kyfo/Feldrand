@@ -304,6 +304,37 @@ loop() {
         collide();
         stream();
         Grid<Cell>::swap(src, dest);
+
+        // TODO this is a crappy NaN fix - please remove
+        for(size_t iy = 0; iy < src.y(); ++iy) {
+            for(size_t ix = 0; ix < src.x(); ++ix) {
+                bool wrong = false;
+                if(!isfinite(src(ix, iy).C)) wrong = true;
+                if(!isfinite(dest(ix, iy).C)) wrong = true;
+                if(wrong) {
+                    cout << src(ix, iy);
+                    src(ix + 1, iy + 1) = fluid;
+                    src(ix + 1, iy) = fluid;
+                    src(ix + 1, iy - 1) = fluid;
+                    src(ix, iy + 1) = fluid;
+                    src(ix, iy) = fluid;
+                    src(ix, iy - 1) = fluid;
+                    src(ix - 1, iy + 1) = fluid;
+                    src(ix - 1, iy) = fluid;
+                    src(ix - 1, iy - 1) = fluid;
+                    dest(ix + 1, iy + 1) = fluid;
+                    dest(ix + 1, iy) = fluid;
+                    dest(ix + 1, iy - 1) = fluid;
+                    dest(ix, iy + 1) = fluid;
+                    dest(ix, iy) = fluid;
+                    dest(ix, iy - 1) = fluid;
+                    dest(ix - 1, iy + 1) = fluid;
+                    dest(ix - 1, iy) = fluid;
+                    dest(ix - 1, iy - 1) = fluid;
+                }
+            }
+        }
+
         advance();
     }
 }
@@ -406,40 +437,40 @@ collide() {
             float m7; // diagonal stress
             float m8; // off-diagonal stress
             m0 =         cell.NW +       cell.N +       cell.NE
-                +       cell.W  +       cell.C +       cell.E
-                +       cell.SW +       cell.S +       cell.SE;
+                 +       cell.W  +       cell.C +       cell.E
+                 +       cell.SW +       cell.S +       cell.SE;
 
             m1 =   2.0 * cell.NW -       cell.N + 2.0 * cell.NE
-                -       cell.W  - 4.0 * cell.C -       cell.E
-                + 2.0 * cell.SW -       cell.S + 2.0 * cell.SE;
+                 -       cell.W  - 4.0 * cell.C -       cell.E
+                 + 2.0 * cell.SW -       cell.S + 2.0 * cell.SE;
 
-            m2 =         cell.NW - 2.0 * cell.N +       cell.NE
-                - 2.0 * cell.W  + 4.0 * cell.C - 2.0 * cell.E
-                +       cell.SW - 2.0 * cell.S +       cell.SE;
+            m2 =        cell.NW - 2.0 * cell.N +       cell.NE
+                 - 2.0 * cell.W  + 4.0 * cell.C - 2.0 * cell.E
+                 +       cell.SW - 2.0 * cell.S +       cell.SE;
 
             m3 = -       cell.NW +          0.0 +       cell.NE
-                -       cell.W  +          0.0 +       cell.E
-                -       cell.SW +          0.0 +       cell.SE;
+                 -       cell.W  +          0.0 +       cell.E
+                 -       cell.SW +          0.0 +       cell.SE;
 
             m4 = -       cell.NW +          0.0 +       cell.NE
-                + 2.0 * cell.W  +          0.0 - 2.0 * cell.E
-                -       cell.SW +          0.0 +       cell.SE;
+                 + 2.0 * cell.W  +          0.0 - 2.0 * cell.E
+                 -       cell.SW +          0.0 +       cell.SE;
 
             m5 =         cell.NW +       cell.N +       cell.NE
-                +           0.0 +          0.0 +           0.0
-                -       cell.SW -       cell.S -       cell.SE;
+                 +           0.0 +          0.0 +           0.0
+                 -       cell.SW -       cell.S -       cell.SE;
 
             m6 =         cell.NW - 2.0 * cell.N +       cell.NE
-                +           0.0 +          0.0 +           0.0
-                -       cell.SW + 2.0 * cell.S -       cell.SE;
+                 +           0.0 +          0.0 +           0.0
+                 -       cell.SW + 2.0 * cell.S -       cell.SE;
 
             m7 =             0.0 -       cell.N +           0.0
-                +       cell.W  +          0.0 +       cell.E
-                +           0.0 -       cell.S +           0.0;
+                 +       cell.W  +          0.0 +       cell.E
+                 +           0.0 -       cell.S +           0.0;
 
             m8 = -       cell.NW +          0.0 +       cell.NE
-                +           0.0 +          0.0 +           0.0
-                +       cell.SW +          0.0 -       cell.SE;
+                 +           0.0 +          0.0 +           0.0
+                 +       cell.SW +          0.0 -       cell.SE;
 
             float vSquared = m3 * m3 + m5 * m5;
 
@@ -468,6 +499,25 @@ collide() {
             cell.SW = (m0 +2.0*m1 +    m2 -m3 -    m4 -m5 -    m6     +m8)/36.0;
             cell.S  = (m0 -    m1 -2.0*m2             -m5 +2.0*m6 -m7    )/36.0;
             cell.SE = (m0 +2.0*m1 +    m2 +m3 +    m4 -m5 -    m6     -m8)/36.0;
+            if(cell.NW  < 0.0) cell.NW  = 0.0;
+            if(cell.N   < 0.0) cell.N   = 0.0;
+            if(cell.NE  < 0.0) cell.NE  = 0.0;
+            if(cell.W   < 0.0) cell.W   = 0.0;
+            if(cell.C   < 0.0) cell.C   = 0.0;
+            if(cell.E   < 0.0) cell.E   = 0.0;
+            if(cell.SW  < 0.0) cell.SW  = 0.0;
+            if(cell.S   < 0.0) cell.S   = 0.0;
+            if(cell.SE  < 0.0) cell.SE  = 0.0;
+
+            if(cell.NW > 10.0e5) cell.NW  /= 2.0;
+            if(cell.N  > 10.0e5) cell.N   /= 2.0;
+            if(cell.NE > 10.0e5) cell.NE  /= 2.0;
+            if(cell.W  > 10.0e5) cell.W   /= 2.0;
+            if(cell.C  > 10.0e5) cell.C   /= 2.0;
+            if(cell.E  > 10.0e5) cell.E   /= 2.0;
+            if(cell.SW > 10.0e5) cell.SW  /= 2.0;
+            if(cell.S  > 10.0e5) cell.S   /= 2.0;
+            if(cell.SE > 10.0e5) cell.SE  /= 2.0;
         }
     }
 }
