@@ -354,7 +354,12 @@ advance() {
     rw_mutex.unlock();
     if(compute_time < given_time)
         this_thread::sleep_for(given_time - compute_time);
-    while(pause) this_thread::sleep_for(given_time);
+
+    while(pause) {
+        this_thread::sleep_for(given_time);
+        handle_requests();
+    }
+
     rw_mutex.lock();
     timestamp = high_resolution_clock::now();
 }

@@ -32,12 +32,12 @@ endif()
 set(LIBRARY_OUTPUT_PATH
   ${CMAKE_CURRENT_BINARY_DIR}/lib
   CACHE PATH
-  "Directory for all libraries")
+  "Directory for all libraries" FORCE)
 
 set(EXECUTABLE_OUTPUT_PATH
   ${CMAKE_CURRENT_BINARY_DIR}/bin
   CACHE PATH
-  "Directory for all executables")
+  "Directory for all executables" FORCE)
 
 set(FELDRAND_INCLUDE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/include
