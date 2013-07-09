@@ -54,12 +54,12 @@ namespace Feldrand {
 enum struct cell_t {
     OBSTACLE,
     FLUID,
-    CONSTANT,
+    CONSTANT
 };
 
 enum struct mask_t {
     MODIFY,
-    IGNORE,
+    IGNORE
 };
 
 class Simulation {
@@ -100,7 +100,7 @@ public: /* accessor functions */
         run,     // requires data = NULL
         clear,   // requires data = NULL
         draw,    // requires data = draw_data&
-        steps,   // requires data = size_t
+        steps   // requires data = size_t
     };
 
     struct draw_data {
@@ -124,7 +124,7 @@ public: /* accessor functions */
         timestep_id,   // -> size_t
         velocity_grid, // -> Grid<Vec2D<float>>*
         density_grid,  // -> Grid<float>*
-        type_grid,     // -> Grid<cell_t>*
+        type_grid     // -> Grid<cell_t>*
     };
 
     /* Request some data from the Simulation. Calls to this
@@ -171,7 +171,7 @@ Simulation::get<Grid<cell_t>*>(Data what) -> Grid<cell_t>*;
  * ones, static assert will inform you at compile time. */
 template<typename T>
 void Simulation::action(Action what, T data) {
-    static_assert(sizeof(T) != sizeof(T), // any better ideas?
+    static_assert(sizeof(T) != sizeof(T), // TODO any better ideas?
                   "You use action() with an invalid argument type! "
                   "See the Simulation.hpp header for allowed types.");
 }

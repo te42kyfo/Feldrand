@@ -269,8 +269,7 @@ get(Data what) -> Grid<cell_t>* {
     future<Grid<cell_t>*> f = p->get_future();
 
     switch(what) {
-    case Data::velocity_grid:
-        cout << "queuing one" << endl;
+    case Data::type_grid:
         todo_queue.push(bind([this](promise<Grid<cell_t>*>* p) {
                     p->set_value(get_type_grid());
                     delete p;
@@ -305,14 +304,17 @@ loop() {
         stream();
         Grid<Cell>::swap(src, dest);
 
-        // TODO this is a crappy NaN fix - please remove
+        // TODO this is a crappy NaN fix
+        // I hope this can be done better
         for(size_t iy = 0; iy < src.y(); ++iy) {
             for(size_t ix = 0; ix < src.x(); ++ix) {
                 bool wrong = false;
                 if(!isfinite(src(ix, iy).C)) wrong = true;
                 if(!isfinite(dest(ix, iy).C)) wrong = true;
                 if(wrong) {
+#ifndef NDEBUG
                     cout << src(ix, iy);
+#endif
                     src(ix + 1, iy + 1) = fluid;
                     src(ix + 1, iy) = fluid;
                     src(ix + 1, iy - 1) = fluid;
@@ -347,7 +349,7 @@ advance() {
 
     using namespace std::chrono;
     microseconds given_time(2000); // TODO calculate this properly
-    microseconds compute_time = high_resolution_clock::now() - timestamp;
+    microseconds compute_time = duration_cast<microseconds>(high_resolution_clock::now() - timestamp);
 
     rw_mutex.unlock();
     if(compute_time < given_time)

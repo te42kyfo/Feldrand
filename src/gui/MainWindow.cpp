@@ -22,6 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QAction>
 #include <QtGui/QMenuBar>
+#include <QKeySequence>
 #include <QFileDialog>
 #include <QTabWidget>
 #include <thread>
@@ -44,15 +45,15 @@ MainWindow::MainWindow() {
     openGLWidget = new OpenGLWidget;
     openGLWidget->setSimulation(sim);
 
-    QTabWidget* tabWidget = new QTabWidget();
-    QWidget* infoTab = new QWidget();
-    QWidget* drawTab = new QWidget();
-    tabWidget->addTab(infoTab, QString("Info"));
-    tabWidget->addTab(drawTab, QString("Draw"));
+    // QTabWidget* tabWidget = new QTabWidget();
+    // QWidget* infoTab = new QWidget();
+    // QWidget* drawTab = new QWidget();
+    // tabWidget->addTab(infoTab, QString("Info"));
+    // tabWidget->addTab(drawTab, QString("Draw"));
 
     QHBoxLayout *layout = new QHBoxLayout();
     layout->addWidget(openGLWidget);
-    layout->addWidget(tabWidget);
+    // layout->addWidget(tabWidget);
     layout->setContentsMargins(0, 0, 0, 0);
     widget->setLayout(layout);
 
@@ -140,6 +141,10 @@ void MainWindow::visLic() {
     openGLWidget->setVisualisation(vis_t::LIC);
 }
 
+void MainWindow::fullscreen() {
+    this->setWindowState(this->windowState() ^ Qt::WindowFullScreen);
+}
+
 void MainWindow::about() {
     AboutWindow* p = new AboutWindow(this);
     p->show();
@@ -209,6 +214,11 @@ void MainWindow::createActions()
     visLicAct->setStatusTip(tr("Line Integrated Convolution"));
     connect(visLicAct, SIGNAL(triggered()), this, SLOT(visLic()));
 
+    fullscreenAct = new QAction(tr("Fullscreen"), this);
+    fullscreenAct->setShortcut(QKeySequence(Qt::Key_F11));
+    fullscreenAct->setStatusTip(tr("Toggle fullscreen mode"));
+    connect(fullscreenAct, SIGNAL(triggered()), this, SLOT(fullscreen()));
+
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Information about the FELDRAND software"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -239,6 +249,7 @@ void MainWindow::createMenus()
     colorMenu->addAction(visStreamlinesAct);
     colorMenu->addAction(visArrowsAct);
     colorMenu->addAction(visLicAct);
+    colorMenu->addAction(fullscreenAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);

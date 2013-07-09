@@ -34,7 +34,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       draw_lic(600, 150),
       drawing_routine(&draw_arrows)
 {
-    circle_mask = createCircleMask(7);
+    circle_mask = createCircleMask(4);
     onIdle();
 }
 
@@ -199,10 +199,11 @@ OpenGLWidget::draw() {
     if(!sim) return false;
 
     sim->beginMultiple();
-    auto v = sim->get<Grid<Vec2D<float>>*>
-        (Simulation::Data::velocity_grid);
+    auto v = sim->get<Grid<Vec2D<float>>*>(Simulation::Data::velocity_grid);
     auto d = sim->get<Grid<float>*>(Simulation::Data::density_grid);
+    auto t = sim->get<Grid<cell_t>*>(Simulation::Data::type_grid);
     sim->endMultiple();
+
     vel_ptr = shared_ptr<const Grid<Vec2D<float>>>((Grid<Vec2D<float>>*)v);
     dens_ptr = shared_ptr<const Grid<float>>((Grid<float>*)d);
     return redraw();

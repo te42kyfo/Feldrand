@@ -2,7 +2,7 @@
 
 * primary goals
  - [X] Finish the save load system
- - [ ] No crashes due to some geomety/speed
+ - [X] No crashes due to some geomety/speed
  - [ ] Finish New... mechanism
  - [ ] Add Lift/Drag widget
  - [ ] Display obstacles

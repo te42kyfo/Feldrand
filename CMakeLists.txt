@@ -4,7 +4,7 @@ project(FELDRAND)
 cmake_policy(SET CMP0003 NEW)
 
 set(FELDRAND_VERSION_MAJOR 0)
-set(FELDRAND_VERSION_MINOR 1)
+set(FELDRAND_VERSION_MINOR 2)
 set(FELDRAND_CORE_SOVERSION 0)
 set(FELDRAND_VISUALISATION_SOVERSION 0)
 
@@ -30,19 +30,21 @@ endif()
 
 
 set(LIBRARY_OUTPUT_PATH
-  ${PROJECT_BINARY_DIR}/lib
+  ${CMAKE_CURRENT_BINARY_DIR}/lib
   CACHE PATH
   "Directory for all libraries")
 
 set(EXECUTABLE_OUTPUT_PATH
-  ${PROJECT_BINARY_DIR}/bin
+  ${CMAKE_CURRENT_BINARY_DIR}/bin
   CACHE PATH
   "Directory for all executables")
 
 set(FELDRAND_INCLUDE_DIR
-  ${PROJECT_BINARY_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   CACHE PATH
-  "Directory for all executables")
+  "Directory for all executables" FORCE)
+
+message(${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(
   ${FELDRAND_INCLUDE_DIR}/config.hpp.in

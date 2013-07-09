@@ -60,6 +60,8 @@ private slots:
     void visArrows();
     void visLic();
 
+    void fullscreen();
+
     void about();
 private:
     void createActions();
@@ -85,6 +87,7 @@ private:
     QAction *visStreamlinesAct;
     QAction *visArrowsAct;
     QAction *visLicAct;
+    QAction *fullscreenAct;
 
     QAction *clearAct;
     QAction *pauseAct;
