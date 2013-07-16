@@ -38,22 +38,27 @@ public:
     Vec2D(T x, T y) : x(x), y(y) {};
     Vec2D(const Vec2D& other)
         : x(other.x), y(other.y){}
-    inline const Vec2D& operator+=(const Vec2D& other) {
+    inline Vec2D& operator=(const Vec2D& other) {
+        x = other.x;
+        y = other.y;
+        return *this;
+    }
+    inline Vec2D& operator+=(const Vec2D& other) {
         x += other.x;
         y += other.y;
         return *this;
     }
-    inline const Vec2D& operator-=(const Vec2D& other) {
+    inline Vec2D& operator-=(const Vec2D& other) {
         x -= other.x;
         y -= other.y;
         return *this;
     }
-    inline const Vec2D& operator*=(const T& scalar) {
+    inline Vec2D& operator*=(const T& scalar) {
         x *= scalar;
         y *= scalar;
         return *this;
     }
-    inline const Vec2D& operator/=(const T& scalar) {
+    inline Vec2D& operator/=(const T& scalar) {
         x /= scalar;
         y /= scalar;
         return *this;

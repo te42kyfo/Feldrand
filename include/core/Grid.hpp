@@ -39,7 +39,7 @@ class Grid {
 public:
     Grid() : _x(), _y(), _data(nullptr) {}
 
-    explicit Grid(size_t x, size_t y)
+    Grid(size_t x, size_t y)
         : _x(x), _y(y) {
         _data = new T[_x * _y];
     }
@@ -54,7 +54,7 @@ public:
         }
     }
 
-    Grid(Grid&& other)
+    Grid(Grid&& other) noexcept
         : _x(other._x), _y(other._y) {
         _data = other._data;
         other._data = nullptr;
@@ -62,6 +62,28 @@ public:
 
     ~Grid() {
         delete[] _data;
+    }
+
+    Grid& operator=(const Grid& other) {
+        _x = other._x;
+        _y = other._y;
+        delete[] _data;
+        data = new T[_x * _y];
+        for(size_t iy = 0; iy < _y; ++iy) {
+            for(size_t ix = 0; ix < _x; ++ix) {
+                (*this)(ix, iy) = other(ix, iy);
+            }
+        }
+        return this;
+    }
+
+    Grid& operator=(Grid&& other) noexcept {
+        _x = other._x;
+        _y = other._y;
+        delete[] _data;
+        data = other._data;
+        other._data = nullptr;
+        return this;
     }
 
     inline T& operator() (size_t x, size_t y) {
@@ -104,7 +126,6 @@ private:
 
 template <typename T>
 std::ostream& operator<<(std::ostream &dest, const Grid<T>& grid) {
-    dest << "Grid\n";
     dest << grid._x << "\n" << grid._y << "\n";
     for(size_t iy = 0; iy < grid._y; ++iy) {
         for(size_t ix = 0; ix < grid._x; ++ix) {
@@ -116,11 +137,6 @@ std::ostream& operator<<(std::ostream &dest, const Grid<T>& grid) {
 
 template <typename T>
 std::istream& operator>>(std::istream &src, Grid<T>& grid) {
-    char name[5];
-    src.get(); // TODO improve this newline removal kludge
-    src.getline(name, 5);
-    if(strncmp(name, "Grid", 4))
-        throw std::runtime_error(name );
     delete[] grid._data;
     src >> grid._x;
     src >> grid._y;
