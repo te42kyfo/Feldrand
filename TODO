@@ -8,7 +8,7 @@
  - [ ] Display obstacles
 * secondary goals
  - [ ] add OpenCV image recognition
- - [ ] sanify simulation internal threading
+ - [X] sanify simulation internal threading
  - [ ] use OpenCL for the LBM simulation
  - [ ] show FPS and steps per second
  - [ ] sanify coordinates
@@ -17,9 +17,12 @@
  - [ ] use OpenMP for parallelisation (but should still work without...)
  - [ ] use shader programs for visualisation
    Unfortunately this creates problems with compatibility on some drivers
+   (waiting for mesa support...)
  - [ ] build FELDRAND for Mac
  - [ ] build FELDRAND for Windows
  - [ ] measure the physical accuracy of the simulation on some scale
    to achieve guaranteed realtime, drastical (and incorrect) optimisations
    are sometimes necessary. This makes it transparent how many
    of these optimisations are active. More a fun feature nontheless.
+ - [ ] rework the visualisation infrastructure (maybe less OOP bloat)
+ - [X] allow for different Simulation backends, not only MRT-LBM

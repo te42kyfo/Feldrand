@@ -1,6 +1,11 @@
 include_directories(${FELDRAND_INCLUDE_DIR})
 
-add_library(feldrand SHARED Simulation.cpp SimulationImplementation.cpp SimulationUtilities.cpp)
+add_library(feldrand SHARED
+  MRT_LBM.cpp
+  SimulationImplementation.cpp
+  Simulation.cpp
+  SimulationUtilities.cpp
+)
 
 set_target_properties(
   feldrand

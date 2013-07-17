@@ -29,8 +29,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
  *        D emonstrator
  *
  * the FELDRAND is a 2-dimensional real time fluid simulator with focus on
- * simplicity and speed. Internal it uses a Lattice-Boltzmann simulation
- * which allows it to handle even complicated geometries.
+ * simplicity and speed. Internal it uses a Lattice-Boltzmann simulation which
+ * allows it to handle even complicated geometries.
  *
  * For questions and feedback please contact:
  * - The developer Marco Heisig (marco.heisig@fau.de)
@@ -64,19 +64,19 @@ enum struct mask_t {
 
 class Simulation {
 public:
-    /* Each Feldrand::Simulation is performed on a rectangular domain.
-     * The underlying compute grid must have the same ratio of width to height
-     * as the domain itself, therefore the parameters width, height,
-     * grid_width and grid_height are implicitly computed in each of the
-     * following methods.
-     * To understand the naming convention of these methods simply replace
+    /* Each Feldrand::Simulation is performed on a rectangular domain.  The
+     * underlying compute grid must have the same ratio of width to height as
+     * the domain itself, therefore the parameters width, height, grid_width
+     * and grid_height are implicitly computed in each of the following
+     * methods. To understand the naming convention of these methods simply
+     * replace
      * d = domain, in meters
      * w = width
      * h = height
      * g = grid
      * t = total_points
-     * The simulation is in paused state upon construction. Call run()
-     * to begin and pause() to pause again. */
+     * The simulation is in paused state upon construction. Call run() to
+     * begin and pause() to pause again. */
     static Simulation create_dwdhgt(double domain_width, double domain_height,
                                     size_t total_points);
     static Simulation create_dwdhgw(double domain_width, double domain_height,
@@ -92,15 +92,15 @@ public:
     Simulation(const Simulation& other);
     ~Simulation();
 
-public: /* accessor functions */
-    /* These orders can be used as argument in simulation.do()
-     * some of them require additional data to be passed. */
+public:
+    /* These orders can be used as argument in simulation.action() some of
+     * them require additional data to be passed. */
     enum struct Action {
-        pause,   // requires data = NULL
-        run,     // requires data = NULL
-        clear,   // requires data = NULL
+        pause,
+        run,
+        clear,
         draw,    // requires data = draw_data&
-        steps   // requires data = size_t
+        steps    // requires data = size_t
     };
 
     struct draw_data {
@@ -109,13 +109,13 @@ public: /* accessor functions */
         cell_t type;
     };
 
-    /* Order the simulation to perform an action. */
+    /* Make the simulation to perform an action. */
     template<typename T>
     void action(Action what, T data);
     void action(Action what);
 
-    /* These elements can be used as argument for a Simulation's
-     * get() method to specify the desired value. */
+    /* These elements can be used as argument for a Simulation's get() method
+     * to specify the desired value. */
     enum struct Data {
         width,         // -> double
         height,        // -> double
@@ -124,24 +124,20 @@ public: /* accessor functions */
         timestep_id,   // -> size_t
         velocity_grid, // -> Grid<Vec2D<float>>*
         density_grid,  // -> Grid<float>*
-        type_grid     // -> Grid<cell_t>*
+        type_grid      // -> Grid<cell_t>*
     };
 
-    /* Request some data from the Simulation. Calls to this
-     * function may block for at most one complete simulation
-     * timestep. You might use std::async to avoid this. */
+    /* Request some data from the Simulation. Calls to this function may block
+     * for at most one complete simulation timestep. You might use std::async
+     * to avoid this. */
     template<typename T>
     auto get(Data what) -> T;
 
-    /* The Simulations methods do not guarantee that successive
-     * requests apply to the same timestep.
-     * If this behaviour is desired, put all those calls in a
-     * beginMultiple(); ... endMultiple(); block. */
+    /* The Simulations methods do not guarantee that successive requests apply
+     * to the same timestep.  If this behaviour is desired, put all those
+     * calls in a beginMultiple(); ... endMultiple(); block. */
     void beginMultiple();
     void endMultiple();
-
-    static std::string toString(Simulation::Data what);
-    static std::string toString(Simulation::Action  what);
 
     class SimulationImplementation;
 private:
@@ -152,10 +148,19 @@ private:
                                     Simulation& sim);
 };
 
+/* Tiny helpers to read or write the Simulation's enums */
+std::ostream& operator<<(std::ostream& dest, const Simulation::Data& what);
+std::ostream& operator<<(std::ostream& dest, const Simulation::Action& what);
+std::ostream& operator<<(std::ostream& dest, const cell_t& type);
+std::istream& operator>>(std::istream& src, Simulation::Data& what);
+std::istream& operator>>(std::istream& src, Simulation::Action& what);
+std::istream& operator>>(std::istream& src, cell_t& type);
+
 template<> void
 Simulation::action<size_t>(Action what, size_t data);
 template<> void
 Simulation::action<Simulation::draw_data&>(Action what, Simulation::draw_data& data);
+
 template<> auto
 Simulation::get<double>(Data what) -> double;
 template<> auto
@@ -168,7 +173,7 @@ template<> auto
 Simulation::get<Grid<cell_t>*>(Data what) -> Grid<cell_t>*;
 
 /* If the template type of action() or get() is none of the above
- * ones, static assert will inform you at compile time. */
+ * ones, static_assert will inform you at compile time. */
 template<typename T>
 void Simulation::action(Action what, T data) {
     const size_t impossible_size = size_t(0) - size_t(1);
