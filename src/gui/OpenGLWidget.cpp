@@ -34,7 +34,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       draw_lic(600, 150),
       drawing_routine(&draw_arrows)
 {
-    circle_mask = createCircleMask(4);
+    circle_mask = createCircleMask(20);
     onIdle();
 }
 
@@ -223,7 +223,7 @@ OpenGLWidget::redraw() {
 
     (*drawing_routine)(*vel_ptr, *dens_ptr);
 
-    swapBuffers();
+	//  swapBuffers();
     return true;
 }
 

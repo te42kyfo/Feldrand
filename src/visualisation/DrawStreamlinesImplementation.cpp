@@ -30,14 +30,14 @@ operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
     calibrateColor(vector_field, scalar_field);
     // use fixed seed as we want the same starting points each run.
-    srand(42);
-    for(size_t i = 0; i < streamline_amount; ++i) {
+   
+    for(size_t i = 0; i < 100; ++i) {
         // generate random point
-        size_t ix = (rand() % vector_field.x());
-        size_t iy = (rand() % vector_field.y());
+        size_t ix = i*1023%vector_field.x();
+        size_t iy = i* 222%vector_field.y();
         Vec2D<float> point((float)ix / (float)vector_field.x(),
                      (float)iy / (float)vector_field.y());
-        drawStreamline(point,  1.0, vector_field, scalar_field);
+		drawStreamline(point,  1.0, vector_field, scalar_field);
         drawStreamline(point, -1.0, vector_field, scalar_field);
     }
 }
@@ -48,22 +48,81 @@ drawStreamline(Vec2D<float> point,
                float dir,
                const Grid<Vec2D<float>>& vector_field,
                const Grid<float>& scalar_field) {
-    float cell_size =  1.0 / vector_field.x();
-    float scaling = cell_size / steps_per_cell;
+
+	
+
+   
+
+	float xcell = point.x * (vector_field.x()-1);
+    float ycell = point.y * (vector_field.y()-1);
+
+
+	bool predictor = true;;
+	Vec2D<float> v1;
+
     glBegin(GL_LINE_STRIP);
     glVertex3f(point.x, point.y, 0.0f);
-    for(size_t i = 0; i < 1.0 / scaling; i++) {
-        // using Heun's method which is second order accurate
-        Vec2D<float> euler = point
-            + interpolate(vector_field, point).normalize() * dir * scaling;
-        point += euler
-            + interpolate(vector_field, euler).normalize() * dir * scaling;
-        point /= 2.0;
-        if(interpolate(vector_field, point).abs() == 0.0) break;
+    for(size_t i = 0; i < 300; i++) {
+  
+		
+		if( predictor) {
+			v1 = interpolate(vector_field, point );
+			if( v1.x*v1.x+v1.y*v1.y < 0.000001) break;
+			v1 = v1.normalize();
+			v1.x *= dir;
+			v1.y *= dir*-1;
+		}
+		
 
-        QColor color = getColorAtPoint(vector_field, scalar_field, point);
-        glColor3f(color.redF(), color.greenF(), color.blueF());
-        glVertex3f(point.x, point.y, 0.0f);
+
+		float tx1 = (floor(xcell) - xcell) / v1.x;
+		float tx2 = (floor(xcell) - xcell+ ( (v1.x<0) ? -1 : 1)  ) / v1.x;
+		float ty1 = (floor(ycell) - ycell) / v1.y;
+		float ty2 = (floor(ycell) - ycell+ ( (v1.y<0) ? -1 : 1)  ) / v1.y;
+		
+
+		float tx = (tx1 > tx2) ? tx1 : tx2;
+		float ty = (ty1 > ty2) ? ty1 : ty2;
+
+		Vec2D<float> intermediate;
+		int intermediate_xcell = xcell;
+		int intermediate_ycell = ycell;
+
+		if( tx < ty) {
+			intermediate.x = point.x + tx*v1.x/(vector_field.x()-1);
+			intermediate.y = point.y + tx*v1.y/(vector_field.x()-1);
+			intermediate_xcell = xcell + tx*v1.x;
+		} else {
+			intermediate.x = point.x + ty*v1.x/(vector_field.y()-1);
+			intermediate.y = point.y + ty*v1.y/(vector_field.y()-1);
+			intermediate_ycell = ycell + ty*v1.y ;
+		}
+
+		
+		if( predictor) {
+			Vec2D<float> v2 = interpolate(vector_field, intermediate);
+			
+			v2 = v2.normalize();
+			v2.x *= dir;
+			v2.y *= dir*-1;
+			v1 = (v1 + v2)/2.0;
+
+			predictor = false;
+		} else {
+			point = intermediate;
+			xcell = intermediate_xcell;
+			ycell = intermediate_ycell;
+
+			if( xcell < 10 || xcell > vector_field.x()-10 || 
+				ycell < 10 || ycell > vector_field.y()-10 ) break;
+			
+			if( i % 1 == 0) {
+				QColor color = getColorAtPoint(vector_field, scalar_field, point);
+				glColor4f(color.redF(), color.greenF(), color.blueF(), 1-color.blueF()*color.redF()*2.0 );
+				glVertex3f(point.x, point.y, 0.0f);
+			}
+			predictor = true;
+		}
     }
     glEnd();
 }

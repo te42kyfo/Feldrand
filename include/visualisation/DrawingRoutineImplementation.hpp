@@ -82,8 +82,7 @@ protected:
         float height = grid.y() - 1;
         size_t ix = static_cast<size_t>(point.x * (float)width);
         size_t iy = static_cast<size_t>(point.y * (float)height);
-        if(ix > width - 2 || iy > height - 2 ||
-           ix < 0          || iy < 0) {
+        if(ix > width - 2 || iy > height - 2 ) {
             return T();
         }
         float hx = 1.0 / (float)width;

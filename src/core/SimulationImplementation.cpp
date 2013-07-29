@@ -418,7 +418,7 @@ stream() {
  * cell are calculated and individually relaxed towards equilibrium. */
 void Simulation::SimulationImplementation::
 collide() {
-    float omega = 1.9;
+    float omega = 1.7;
     for(size_t iy = 0; iy < gridHeight; ++iy) {
         for(size_t ix = 0; ix < gridWidth; ++ix) {
             Cell& cell = src(ix, iy);

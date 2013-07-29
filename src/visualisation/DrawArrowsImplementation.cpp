@@ -34,7 +34,7 @@ DrawArrowsImplementation::
 operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
     calibrateColor(vector_field, scalar_field);
-    const size_t cells_per_dim = 2;
+    const size_t cells_per_dim = 8;
     const size_t cells_per_arrow = cells_per_dim * cells_per_dim;
     for(size_t iy = 0; iy < vector_field.y() - cells_per_dim; iy += cells_per_dim) {
         for(size_t ix = 0; ix < vector_field.x() - cells_per_dim; ix += cells_per_dim) {
