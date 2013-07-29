@@ -118,7 +118,7 @@ drawStreamline(Vec2D<float> point,
 			
 			if( i % 1 == 0) {
 				QColor color = getColorAtPoint(vector_field, scalar_field, point);
-				glColor4f(color.redF(), color.greenF(), color.blueF(), 1-color.blueF()*color.redF()*2.0 );
+				glColor4f(color.redF(), color.greenF(), color.blueF(), 1 );
 				glVertex3f(point.x, point.y, 0.0f);
 			}
 			predictor = true;
