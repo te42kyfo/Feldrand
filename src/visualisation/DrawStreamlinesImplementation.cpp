@@ -31,14 +31,23 @@ operator()(const Grid<Vec2D<float>>& vector_field,
     calibrateColor(vector_field, scalar_field);
     // use fixed seed as we want the same starting points each run.
    
-    for(size_t i = 0; i < 100; ++i) {
+	vector< Vec2D<float> > seeds;
+
+    for(size_t i = 0; i < 5000; ++i) {
         // generate random point
         size_t ix = i*1023%vector_field.x();
-        size_t iy = i* 222%vector_field.y();
+        size_t iy = i*222%vector_field.y();
         Vec2D<float> point((float)ix / (float)vector_field.x(),
                      (float)iy / (float)vector_field.y());
-		drawStreamline(point,  1.0, vector_field, scalar_field);
-        drawStreamline(point, -1.0, vector_field, scalar_field);
+		seeds.push_back(point);
+
+	}
+	while(! seeds.empty() ) {
+		Vec2D<float> point = seeds.back();
+		seeds.pop_back();
+		drawStreamline(point,  1.0, vector_field, scalar_field, seeds);
+        drawStreamline(point, -1.0, vector_field, scalar_field, seeds);
+
     }
 }
 
@@ -47,7 +56,8 @@ DrawStreamlinesImplementation::
 drawStreamline(Vec2D<float> point,
                float dir,
                const Grid<Vec2D<float>>& vector_field,
-               const Grid<float>& scalar_field) {
+               const Grid<float>& scalar_field,
+			   vector<Vec2D<float>>& seeds) {
 
 	
 
@@ -62,15 +72,16 @@ drawStreamline(Vec2D<float> point,
 
     glBegin(GL_LINE_STRIP);
     glVertex3f(point.x, point.y, 0.0f);
-    for(size_t i = 0; i < 300; i++) {
+    for(size_t i = 0; i < 3000; i++) {
   
 		
 		if( predictor) {
 			v1 = interpolate(vector_field, point );
 			if( v1.x*v1.x+v1.y*v1.y < 0.000001) break;
 			v1 = v1.normalize();
+			v1.y *= dir* -1;
 			v1.x *= dir;
-			v1.y *= dir*-1;
+
 		}
 		
 
@@ -90,10 +101,10 @@ drawStreamline(Vec2D<float> point,
 
 		if( tx < ty) {
 			intermediate.x = point.x + tx*v1.x/(vector_field.x()-1);
-			intermediate.y = point.y + tx*v1.y/(vector_field.x()-1);
+			intermediate.y = point.y + tx*v1.y/(vector_field.y()-1);
 			intermediate_xcell = xcell + tx*v1.x;
 		} else {
-			intermediate.x = point.x + ty*v1.x/(vector_field.y()-1);
+			intermediate.x = point.x + ty*v1.x/(vector_field.x()-1);
 			intermediate.y = point.y + ty*v1.y/(vector_field.y()-1);
 			intermediate_ycell = ycell + ty*v1.y ;
 		}
@@ -103,8 +114,9 @@ drawStreamline(Vec2D<float> point,
 			Vec2D<float> v2 = interpolate(vector_field, intermediate);
 			
 			v2 = v2.normalize();
+			v2.y *= dir* -1;
 			v2.x *= dir;
-			v2.y *= dir*-1;
+	
 			v1 = (v1 + v2)/2.0;
 
 			predictor = false;
@@ -118,8 +130,19 @@ drawStreamline(Vec2D<float> point,
 			
 			if( i % 1 == 0) {
 				QColor color = getColorAtPoint(vector_field, scalar_field, point);
-				glColor4f(color.redF(), color.greenF(), color.blueF(), 1 );
+				glColor4f(color.redF(), color.greenF(), color.blueF(), 1-color.blueF()*color.redF()*2 );
 				glVertex3f(point.x, point.y, 0.0f);
+			}
+			if( i%5 == 0) {
+				for( auto  it = seeds.begin();
+					 it != seeds.end();) {
+					if( ((it->x-point.x)*(it->x-point.x)+
+						 (it->y-point.y)*(it->y-point.y)) < 0.002 ) {
+						it = seeds.erase(it);
+					} else {
+						it++;
+					}
+				}
 			}
 			predictor = true;
 		}
