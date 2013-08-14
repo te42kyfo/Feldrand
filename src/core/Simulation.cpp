@@ -21,7 +21,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <iterator>
 #include <cstring>
 #include "core/Simulation.hpp"
-#include "core/SimulationImplementation.hpp"
+#include "core/MRT_LBM.hpp"
+
 using namespace std;
 
 namespace Feldrand {
@@ -54,62 +55,64 @@ Simulation::Simulation(double width /*in meters*/,
                        double height /*in meters*/,
                        size_t grid_width,
                        size_t grid_height)
-    :impl(new SimulationImplementation(width, height,
-                                       grid_width,
-                                       grid_height)) {}
+    :impl(new MRT_LBM(width, height,
+                      grid_width,
+                      grid_height)) {}
 
 Simulation::Simulation()
-    :impl(new SimulationImplementation()) {}
+    :impl(new MRT_LBM()) {}
 
 Simulation::Simulation(Simulation&& other)
-    :impl(other.impl) {
-    other.impl = NULL;
+    : impl(other.impl) {
+    other.impl = nullptr;
 }
 
-Simulation::Simulation(const Simulation& other)
-    :impl(new SimulationImplementation(*(other.impl))) {}
+Simulation::Simulation(const Simulation& other) {
+    // TODO
+    impl = new MRT_LBM(static_cast<MRT_LBM&>(*(other.impl)));
+}
 
 Simulation::~Simulation() {
     delete impl;
 }
 
-void Simulation::action(Action what) {
+void Simulation::action(Simulation::Action what) {
     impl->action(what);
 }
 
 template<> void
-Simulation::action<Simulation::draw_data&>(Action what,
+Simulation::action<Simulation::draw_data&>(Simulation::Action what,
                                            Simulation::draw_data& data) {
     impl->action<Simulation::draw_data&>(what, data);
 }
 
 template<> void
-Simulation::action<size_t>(Action what, size_t data) {
+Simulation::action<size_t>(Simulation::Action what, size_t data) {
     impl->action<size_t>(what, data);
 }
 
 template<>
-auto Simulation::get(Data what) -> double {
+auto Simulation::get(Simulation::Data what) -> double {
     return impl->get<double>(what);
 }
 
 template<>
-auto Simulation::get(Data what) -> size_t {
+auto Simulation::get(Simulation::Data what) -> size_t {
     return impl->get<size_t>(what);
 }
 
 template<>
-auto Simulation::get(Data what) -> Grid<Vec2D<float>>* {
+auto Simulation::get(Simulation::Data what) -> Grid<Vec2D<float>>* {
     return impl->get<Grid<Vec2D<float>>*>(what);
 }
 
 template<>
-auto Simulation::get(Data what) -> Grid<float>* {
+auto Simulation::get(Simulation::Data what) -> Grid<float>* {
     return impl->get<Grid<float>*>(what);
 }
 
 template<>
-auto Simulation::get(Data what) -> Grid<cell_t>* {
+auto Simulation::get(Simulation::Data what) -> Grid<cell_t>* {
     return impl->get<Grid<cell_t>*>(what);
 }
 
@@ -121,33 +124,6 @@ void Simulation::endMultiple() {
     impl->endMultiple();
 }
 
-string Simulation::toString(Data what) {
-    switch(what) {
-    case Data::width: return string("width");
-    case Data::height: return string("height");
-    case Data::gridWidth: return string("gridWidth");
-    case Data::gridHeight: return string("gridHeight");
-    case Data::timestep_id: return string("timestep_id");
-    case Data::velocity_grid: return string("velocity_grid");
-    case Data::density_grid: return string("density_grid");
-    case Data::type_grid: return string("type_grid");
-    default: break;
-    }
-    return string("unknown");
-}
-
-string Simulation::toString(Simulation::Action  what) {
-    switch(what) {
-    case Action::pause: return string("pause");
-    case Action::run: return string("run");
-    case Action::clear: return string("clear");
-    case Action::draw: return string("draw");
-    case Action::steps: return string("steps");
-    default: break;
-    }
-    return string("unknown");
-}
-
 std::ostream& operator<<(std::ostream &dest,
                          Simulation& sim) {
     dest << *(sim.impl);
@@ -157,6 +133,59 @@ std::ostream& operator<<(std::ostream &dest,
 std::istream& operator>>(std::istream &src,
                          Simulation& sim) {
     src >> *(sim.impl);
+    return src;
+}
+
+std::ostream& operator<<(std::ostream& dest, const Simulation::Data& what) {
+    switch(what) {
+    case Simulation::Data::width: dest << string("width");
+    case Simulation::Data::height: dest << string("height");
+    case Simulation::Data::gridWidth: dest << string("gridWidth");
+    case Simulation::Data::gridHeight: dest << string("gridHeight");
+    case Simulation::Data::timestep_id: dest << string("timestep_id");
+    case Simulation::Data::velocity_grid: dest << string("velocity_grid");
+    case Simulation::Data::density_grid: dest << string("density_grid");
+    case Simulation::Data::type_grid: dest << string("type_grid");
+    default: break;
+    }
+    dest << string("unknown");
+    return dest;
+}
+
+std::ostream& operator<<(std::ostream& dest, const Simulation::Action& what) {
+    switch(what) {
+    case Simulation::Action::pause: dest << string("pause");
+    case Simulation::Action::run: dest << string("run");
+    case Simulation::Action::clear: dest << string("clear");
+    case Simulation::Action::draw: dest << string("draw");
+    case Simulation::Action::steps: dest << string("steps");
+    default: break;
+    }
+    dest << string("unknown");
+    return dest;
+}
+
+std::ostream& operator<<(std::ostream& dest, const cell_t& type) {
+    dest << static_cast<int>(type) << " ";
+    return dest;
+}
+
+std::istream& operator>>(std::istream& src, Simulation::Data& what) {
+    string s;
+    src >> s;
+    // TODO
+    return src;
+}
+
+std::istream& operator>>(std::istream& src, Simulation::Action& what){
+    throw std::runtime_error("operator>>(istream, Simulation::Action) not implemented");
+    return src;
+}
+
+std::istream& operator>>(std::istream& src, cell_t& type) {
+    int i;
+    src >> i;
+    type = static_cast<cell_t>(i);
     return src;
 }
 }
