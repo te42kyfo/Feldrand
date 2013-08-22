@@ -30,13 +30,14 @@ operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
     calibrateColor(vector_field, scalar_field);
 
-     
+    
 	vector< Vec2D<float> > seeds;
 
-    for(size_t i = 0; i < 500; ++i) {
+	srand( 23123);
+    for(size_t i = 0; i < 1000; ++i) {
         // generate qusirandom point, more uniform distribution
-        size_t ix = i*123%vector_field.x();
-        size_t iy = i*222%vector_field.y();
+        size_t ix = (i*222+rand()%10)%vector_field.x();
+		size_t iy = (i*621+rand()%10)%vector_field.y();
         Vec2D<float> point((float)ix / (float)vector_field.x(),
                      (float)iy / (float)vector_field.y());
 		seeds.push_back(point);
@@ -142,7 +143,7 @@ drawStreamline(Vec2D<float> point,
 								  scalar_field,
 								  point));
 
-	for(size_t i = 0; i < 10000; i++) {
+	for(size_t i = 0; i < 500; i++) {
 
 		Vec2D<float> v1 = interpolate( vector_field,
 									   { gridpoint.x / (vector_field.x()-1), 
