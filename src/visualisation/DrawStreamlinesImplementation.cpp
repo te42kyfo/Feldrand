@@ -30,74 +30,90 @@ operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
     calibrateColor(vector_field, scalar_field);
 
-
-	Grid<Vec2D<float>> smoothed_field = vector_field;
-	//smooth
-	for( size_t y = 0; y < vector_field.y(); y++) {
-		for( size_t x = 0; x < vector_field.x(); x++) {
-			if( x == 0 || x == vector_field.x()-1 ||
-				y == 0 || y == vector_field.y()-1 ) {
-				smoothed_field(x, y) = vector_field(x, y);
-			} else {
-				smoothed_field(x,y) = 
-					( vector_field(x-1, y-1) * 2.0f +
-					  vector_field(x-1, y  ) * 2.0f +
-					  vector_field(x-1, y+1) * 2.0f +
-					  vector_field(x  , y-1) * 2.0f +
-					  vector_field(x  , y  ) * 2.0f +
-					  vector_field(x  , y+1) * 2.0f +
-					  vector_field(x+1, y-1) * 2.0f +
-					  vector_field(x+1, y  ) * 2.0f +
-					  vector_field(x+1, y+1) * 2.0f) * (1.0f/18.0f);
-
-			}
-		}
-	}
-
-   
+     
 	vector< Vec2D<float> > seeds;
 
-    for(size_t i = 0; i < 70; ++i) {
+    for(size_t i = 0; i < 500; ++i) {
         // generate qusirandom point, more uniform distribution
-        size_t ix = i*1023%vector_field.x();
+        size_t ix = i*123%vector_field.x();
         size_t iy = i*222%vector_field.y();
         Vec2D<float> point((float)ix / (float)vector_field.x(),
                      (float)iy / (float)vector_field.y());
 		seeds.push_back(point);
 
 	}
-	while(! seeds.empty() ) {
-		Vec2D<float> point = seeds.back();
-		seeds.pop_back();
-		drawStreamline(point,  1.0, smoothed_field, scalar_field, seeds);
-        drawStreamline(point, -1.0, smoothed_field, scalar_field, seeds);
 
+
+	for( auto& seed : seeds) {
+
+		drawStreamline(seed,  1.0, vector_field, scalar_field);
+        drawStreamline(seed, -1.0, vector_field, scalar_field);
     }
+
+
 }
 
-namespace {
+
+
 
 	/* Calculates the nearest, positive intersection with the grid. Expects and returns coordinates in grid space. */
-	Vec2D<float> step( Vec2D<float> origin, Vec2D<float> v) {
+Vec2D<float> step( Vec2D<float> origin, Vec2D<float> v) {
 		
-		
-		// Determine nearest grid line
-		float tx1 = ( floor(origin.x) - origin.x ) / v.x;
-		float tx2 = ( ceil (origin.x) - origin.x ) / v.x;
-		float ty1 = ( floor(origin.y) - origin.y ) / v.y;
-		float ty2 = ( ceil (origin.y) - origin.y ) / v.y;
-		
-		
+	// Determine nearest grid line
+	float tx1 = ( floor(origin.x - 1.0e-5 ) - origin.x ) / v.x;
+	float tx2 = ( ceil (origin.x + 1.0e-5 ) - origin.x ) / v.x;
+	float ty1 = ( floor(origin.y - 1.0e-5) - origin.y ) / v.y;
+	float ty2 = ( ceil (origin.y + 1.0e-5) - origin.y ) / v.y;
+	
+	float tx = (tx1 > tx2) ? tx1 : tx2;
+	float ty = (ty1 > ty2) ? ty1 : ty2;
 
-		float tx = (tx1 > tx2) ? tx1 : tx2;
-		float ty = (ty1 > ty2) ? ty1 : ty2;
-
-		float t = (tx < ty) ? tx : ty;
-
-		return origin + v*t;	
-	}
-
+	float t = (tx < ty) ? tx : ty;
+	
+	
+	return origin + v*t;	
 }
+ 
+// point is in drawspace
+void 
+addVertices( vector<float>& vertices,
+			 vector<float>& colors,
+			 Vec2D<float> point,
+			 Vec2D<float> v1,
+			 QColor color) {
+	
+
+		
+	Vec2D<float> normal = v1;
+	swap(normal.x, normal.y);
+	normal.x *= -1;
+	normal.normalize();
+	
+	Vec2D<float> p1 = point + normal*0.002;
+	Vec2D<float> p2 = point - normal*0.002;
+	
+	
+	for( int i = 0; i < 2; i++) {
+		colors.push_back( color.redF() );
+		colors.push_back( color.greenF() );
+		colors.push_back( color.blueF() );
+		colors.push_back( color.greenF() / 3.0 + 0.1);
+	}
+	
+	vertices.push_back(p2.x  );
+	vertices.push_back(p2.y  );
+	vertices.push_back(0.0 );
+	
+	vertices.push_back(p1.x  );
+	vertices.push_back(p1.y  );
+	vertices.push_back(0.0 );
+	
+}
+
+
+
+
+
 
 
 void
@@ -105,22 +121,32 @@ DrawStreamlinesImplementation::
 drawStreamline(Vec2D<float> point,
                float dir,
                const Grid<Vec2D<float>>& vector_field,
-               const Grid<float>& scalar_field,
-			   vector<Vec2D<float>>& seeds) {
+               const Grid<float>& scalar_field) {
 
-	
 	Vec2D<float> gridpoint { point.x * (vector_field.x()-1),
 			                 point.y * (vector_field.y()-1) };
 
+	vector<float> vertices;
+	vector<float> colors;
 
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(point.x, point.y, 0.0f);
-    for(size_t i = 0; i < 10000; i++) {
- 
+	Vec2D<float> v1 = interpolate(vector_field, point);
+
+
+	v1.y *= -1;
 	
+	addVertices( vertices,
+				 colors,
+				 point,
+				 v1,
+				 getColorAtPoint( vector_field,
+								  scalar_field,
+								  point));
+
+	for(size_t i = 0; i < 10000; i++) {
+
 		Vec2D<float> v1 = interpolate( vector_field,
-						  { gridpoint.x / (vector_field.x()-1), 
-						    gridpoint.y / (vector_field.y()-1) } );
+									   { gridpoint.x / (vector_field.x()-1), 
+										 gridpoint.y / (vector_field.y()-1) } );
 
 
 		v1 *= dir;
@@ -141,39 +167,44 @@ drawStreamline(Vec2D<float> point,
 		v1 = (v1 + v2)/2.0;
 		if( v1.x*v1.x+v1.y*v1.y < 0.00001) break;
 		
+
 		gridpoint = step( gridpoint, v1);
 
+	
 		if( gridpoint.x < 3 || gridpoint.x > vector_field.x()-3 || 
 			gridpoint.y < 3 || gridpoint.y > vector_field.y()-3 ) break;
-		
-		//Drawing space coordinates
-		Vec2D<float> point { gridpoint.x / (vector_field.x()-1), 
-				             gridpoint.y / (vector_field.y()-1) };
 	
-		if( i % 1 == 0) {	
-			QColor color = getColorAtPoint(vector_field, scalar_field, point);
-			glColor4f(color.redF(),
-					  color.greenF(),
-					  color.blueF(),
-					  1.0 );
-			glVertex3f(point.x, point.y, 0.0f);
-		}
-
 		
+		auto point = Vec2D<float> { gridpoint.x / (vector_field.x()-1),
+									gridpoint.y / (vector_field.y()-1) };
 
-		if( i%5 == 0) {
-			for( auto  it = seeds.begin();
-				 it != seeds.end();) {
-				if( ((it->x-point.x)*(it->x-point.x)+
-					 (it->y-point.y)*(it->y-point.y)) < 0.0005 ) {
-					it = seeds.erase(it);
-				} else {
-					it++;
-				}
-			}
-		}
-		
+		v1 = interpolate(vector_field, point);
+		v1.y *= -1;
+		addVertices( vertices,
+					 colors,
+					 point,
+					 v1,
+					 getColorAtPoint( vector_field,
+									  scalar_field,
+									  point));
+
+
+
     }
-    glEnd();
+
+
+	
+
+	glEnableClientState( GL_COLOR_ARRAY);
+ 	glEnableClientState( GL_VERTEX_ARRAY );
+
+	glVertexPointer( 3, GL_FLOAT, 0, (float*) vertices.data() );
+	glColorPointer( 4, GL_FLOAT, 0, (float*) colors.data() );
+	
+	glDrawArrays( GL_TRIANGLE_STRIP, 0,  vertices.size()/3 );
+
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
+
 }
 }

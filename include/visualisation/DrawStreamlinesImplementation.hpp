@@ -41,8 +41,10 @@ protected:
     void drawStreamline(Vec2D<float> point,
                         float direction,
                         const Grid<Vec2D<float>>& vector_field,
-                        const Grid<float>& scalar_field,
-						std::vector< Vec2D<float> >& seeds);
+                        const Grid<float>& scalar_field);
+
+
+	
 
     const size_t streamline_amount;
     const float steps_per_cell;

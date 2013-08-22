@@ -28,7 +28,10 @@ using namespace std;
 namespace Feldrand {
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
-    : QGLWidget(QGLFormat(QGL::Rgba | QGL::DoubleBuffer), parent),
+    : QGLWidget(QGLFormat(QGL::Rgba |
+						  QGL::DoubleBuffer |
+						  QGL::SampleBuffers |
+						  QGL::DepthBuffer), parent),
       draw_streamlines(),
       draw_arrows(),
       draw_lic(600, 150),
@@ -114,10 +117,10 @@ void
 OpenGLWidget::initializeGL()
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
-    glShadeModel(GL_FLAT);
+    glShadeModel(GL_SMOOTH);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
+   
     glEnable(GL_BLEND);
     glLineWidth(1.0);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -223,7 +226,7 @@ OpenGLWidget::redraw() {
 
     (*drawing_routine)(*vel_ptr, *dens_ptr);
 
-	//  swapBuffers();
+	
     return true;
 }
 
@@ -231,6 +234,6 @@ void
 OpenGLWidget::onIdle() {
     updateGL();
     // every 16ms -> roughly 60fps
-    QTimer::singleShot(16, this, SLOT(onIdle()));
+    QTimer::singleShot( 33, this, SLOT(onIdle()));
 }
 }

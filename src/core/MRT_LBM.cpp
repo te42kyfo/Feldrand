@@ -249,7 +249,7 @@ void MRT_LBM::stream() {
 /* the collision step of the MRT-LBM simulation. The moments of each
  * cell are calculated and individually relaxed towards equilibrium. */
 void MRT_LBM::collide() {
-    float omega = 1.6;
+    float omega = 1.0;
     for(size_t iy = 0; iy < gridHeight; ++iy) {
         for(size_t ix = 0; ix < gridWidth; ++ix) {
             Cell& cell = src(ix, iy);
