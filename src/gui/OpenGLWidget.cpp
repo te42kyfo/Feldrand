@@ -236,4 +236,68 @@ OpenGLWidget::onIdle() {
     // every 16ms -> roughly 60fps
     QTimer::singleShot( 33, this, SLOT(onIdle()));
 }
+
+
+//////////////////////////////////////////////////
+// Grab the OpenGL screen and save it as a .tga //
+// Copyright (C) Marius Andra 2001              //
+// http://cone3d.gz.ee  EMAIL: cone3d@hot.ee    //
+//////////////////////////////////////////////////
+void
+OpenGLWidget::takeScreenshot() {
+	// we will store the image data here
+	uchar *pixels;
+	// the thingy we use to write files
+	FILE * shot;
+	// we get the width/height of the screen into this array
+	int screenStats[4];
+
+	// get the width/height of the window
+	glGetIntegerv(GL_VIEWPORT, screenStats);
+
+	// generate an array large enough to hold the pixel data 
+	// (width*height*bytesPerPixel)
+	pixels = new unsigned char[screenStats[2]*screenStats[3]*3];
+	// read in the pixel data, TGA's pixels are BGR aligned
+	glReadPixels(0, 0, screenStats[2], screenStats[3], GL_BGR, 
+				 GL_UNSIGNED_BYTE, pixels);
+
+	// open the file for writing. If unsucessful, return 1
+	if((shot=fopen("shot.tga", "wb"))==NULL) return;
+
+	// this is the tga header it must be in the beginning of 
+	// every (uncompressed) .tga
+	uchar TGAheader[12]={0,0,2,0,0,0,0,0,0,0,0,0};
+	// the header that is used to get the dimensions of the .tga
+	// header[1]*256+header[0] - width
+	// header[3]*256+header[2] - height
+	// header[4] - bits per pixel
+	// header[5] - ?
+	uchar header[6]={( (uchar) (screenStats[2]%256) ),
+					 ( (uchar) (screenStats[2]/256) ),
+					 ( (uchar) (screenStats[3]%256) ),
+					 ( (uchar) (screenStats[3]/256) ),
+					 24,
+					 0};
+
+	// write out the TGA header
+	fwrite(TGAheader, sizeof(uchar), 12, shot);
+	// write out the header
+	fwrite(header, sizeof(uchar), 6, shot);
+	// write the pixels
+	fwrite(pixels, sizeof(uchar), 
+		   screenStats[2]*screenStats[3]*3, shot);
+
+	// close the file
+	fclose(shot);
+	// free the memory
+	delete [] pixels;
+
+	// return success
+	return;
 }
+
+
+}
+
+

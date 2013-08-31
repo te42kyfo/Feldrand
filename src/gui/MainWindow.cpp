@@ -141,6 +141,10 @@ void MainWindow::visLic() {
     openGLWidget->setVisualisation(vis_t::LIC);
 }
 
+void MainWindow::screenshot() {
+    openGLWidget->takeScreenshot();
+}
+
 void MainWindow::fullscreen() {
     this->setWindowState(this->windowState() ^ Qt::WindowFullScreen);
 }
@@ -214,6 +218,11 @@ void MainWindow::createActions()
     visLicAct->setStatusTip(tr("Line Integrated Convolution"));
     connect(visLicAct, SIGNAL(triggered()), this, SLOT(visLic()));
 
+	screenshotAct = new QAction(tr("screenshot"), this);
+    visLicAct->setStatusTip(tr("Take a screenshot"));
+    connect(screenshotAct, SIGNAL(triggered()), this, SLOT(screenshot()));
+
+
     fullscreenAct = new QAction(tr("Fullscreen"), this);
     fullscreenAct->setShortcut(QKeySequence(Qt::Key_F11));
     fullscreenAct->setStatusTip(tr("Toggle fullscreen mode"));
@@ -250,6 +259,7 @@ void MainWindow::createMenus()
     colorMenu->addAction(visArrowsAct);
     colorMenu->addAction(visLicAct);
     colorMenu->addAction(fullscreenAct);
+	colorMenu->addAction(screenshotAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);

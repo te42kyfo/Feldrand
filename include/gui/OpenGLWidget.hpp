@@ -57,6 +57,7 @@ public:
     void setSimulation(std::shared_ptr<Simulation> sim);
     void setVisualisation(vis_t vis);
     void setColor(color_t color);
+	void takeScreenshot();
 
 protected:
     void initializeGL();
@@ -64,6 +65,7 @@ protected:
     void resizeGL(int width, int height);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+
 
 protected:
     /* get simulation values and visualize them */
