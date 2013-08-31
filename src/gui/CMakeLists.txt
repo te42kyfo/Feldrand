@@ -5,6 +5,7 @@ include_directories(${FELDRAND_INCLUDE_DIR})
 
 find_package(Qt4 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 
 set(QT_USE_QTOPENGL TRUE)
 set(QT_USE_QTMAIN TRUE)
@@ -48,6 +49,8 @@ set_target_properties(feldrand_gui PROPERTIES
 target_link_libraries(feldrand_gui
   feldrand
   feldrand_visualisation
-  ${QT_LIBRARIES}
+ -lGLEW		
+ ${QT_LIBRARIES}		
   ${OPENGL_LIBRARIES}
+ 
 )

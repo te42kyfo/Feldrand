@@ -18,6 +18,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef FELDRAND__OPENGL_WIDGET_HPP
 #define FELDRAND__OPENGL_WIDGET_HPP
 
+#include <GL/glew.h> //Has to be included bedore QGLWidget
 #include <memory>
 #include <mutex>
 #include <QGLWidget>

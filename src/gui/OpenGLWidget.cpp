@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "OpenGLWidget.hpp"
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
@@ -116,15 +117,19 @@ OpenGLWidget::setColor(color_t color)
 void
 OpenGLWidget::initializeGL()
 {
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glewInit();
+	glClearColor(0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LINE_SMOOTH);
-   
+
     glEnable(GL_BLEND);
     glLineWidth(1.0);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+
+
 }
 
 void
@@ -226,7 +231,7 @@ OpenGLWidget::redraw() {
 
     (*drawing_routine)(*vel_ptr, *dens_ptr);
 
-	
+
     return true;
 }
 
@@ -238,34 +243,63 @@ OpenGLWidget::onIdle() {
 }
 
 
-//////////////////////////////////////////////////
-// Grab the OpenGL screen and save it as a .tga //
-// Copyright (C) Marius Andra 2001              //
-// http://cone3d.gz.ee  EMAIL: cone3d@hot.ee    //
-//////////////////////////////////////////////////
+
 void
 OpenGLWidget::takeScreenshot() {
-	// we will store the image data here
-	uchar *pixels;
+
+
+
 	// the thingy we use to write files
 	FILE * shot;
-	// we get the width/height of the screen into this array
-	int screenStats[4];
+	size_t width = 16000;
+	size_t height = 16000;
 
-	// get the width/height of the window
+
+
+	int screenStats[4];
+	// get the old width/height of the window
 	glGetIntegerv(GL_VIEWPORT, screenStats);
 
-	// generate an array large enough to hold the pixel data 
-	// (width*height*bytesPerPixel)
-	pixels = new unsigned char[screenStats[2]*screenStats[3]*3];
-	// read in the pixel data, TGA's pixels are BGR aligned
-	glReadPixels(0, 0, screenStats[2], screenStats[3], GL_BGR, 
-				 GL_UNSIGNED_BYTE, pixels);
+	resizeGL(width, height);
+	
+	int new_screenStats[4];
+	// get the old width/height of the window
+	glGetIntegerv(GL_VIEWPORT, new_screenStats);
+
+	width = new_screenStats[2];
+	height = new_screenStats[3];
+
+
+	GLuint framebuffer, renderbuffer;
+	GLenum status;
+
+	//Set up a FBO with one renderbuffer attachment
+	glGenFramebuffersEXT(1, &framebuffer);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+	glGenRenderbuffersEXT(1, &renderbuffer);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB, width, height);
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+								 GL_RENDERBUFFER_EXT, renderbuffer);
+
+	status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+
+	if (status != GL_FRAMEBUFFER_COMPLETE_EXT) std::cout << "some FBO error\n";
+
+	glViewport((GLsizei)0, (GLsizei)0,
+			   (GLsizei)width, (GLsizei)height);
+	//draw
+	draw();
+	draw();
+
+	vector<	GLubyte> pixels(width*height*3);
+	glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, &pixels[0]);
+	
 
 	// open the file for writing. If unsucessful, return 1
 	if((shot=fopen("shot.tga", "wb"))==NULL) return;
 
-	// this is the tga header it must be in the beginning of 
+	// this is the tga header it must be in the beginning of
 	// every (uncompressed) .tga
 	uchar TGAheader[12]={0,0,2,0,0,0,0,0,0,0,0,0};
 	// the header that is used to get the dimensions of the .tga
@@ -273,10 +307,10 @@ OpenGLWidget::takeScreenshot() {
 	// header[3]*256+header[2] - height
 	// header[4] - bits per pixel
 	// header[5] - ?
-	uchar header[6]={( (uchar) (screenStats[2]%256) ),
-					 ( (uchar) (screenStats[2]/256) ),
-					 ( (uchar) (screenStats[3]%256) ),
-					 ( (uchar) (screenStats[3]/256) ),
+	uchar header[6]={( (uchar) (width%256) ),
+					 ( (uchar) (width/256) ),
+					 ( (uchar) (height%256) ),
+					 ( (uchar) (height/256) ),
 					 24,
 					 0};
 
@@ -285,13 +319,20 @@ OpenGLWidget::takeScreenshot() {
 	// write out the header
 	fwrite(header, sizeof(uchar), 6, shot);
 	// write the pixels
-	fwrite(pixels, sizeof(uchar), 
-		   screenStats[2]*screenStats[3]*3, shot);
+	fwrite(&pixels[0], sizeof(uchar),
+		   width*height*3, shot);
 
 	// close the file
 	fclose(shot);
-	// free the memory
-	delete [] pixels;
+
+	
+	glViewport((GLsizei)screenStats[0], (GLsizei)screenStats[1],
+               (GLsizei)screenStats[2], (GLsizei)screenStats[3]);
+
+
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glDeleteRenderbuffersEXT(1, &renderbuffer);
+
 
 	// return success
 	return;
@@ -299,5 +340,3 @@ OpenGLWidget::takeScreenshot() {
 
 
 }
-
-
