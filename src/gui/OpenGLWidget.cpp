@@ -122,10 +122,11 @@ OpenGLWidget::initializeGL()
     glShadeModel(GL_SMOOTH);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_BLEND);
     glLineWidth(1.0);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 
@@ -220,7 +221,9 @@ OpenGLWidget::draw() {
 bool
 OpenGLWidget::redraw() {
     glColor3f(1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT |
+			GL_DEPTH_BUFFER_BIT);
+
 
     glMatrixMode(GL_PROJECTION) ;
     glLoadIdentity();

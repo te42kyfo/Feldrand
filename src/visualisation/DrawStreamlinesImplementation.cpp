@@ -29,15 +29,17 @@ DrawStreamlinesImplementation::
 operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
     
-	glScalef( 0.5f, 0.5f, 0.5f);
+	glScalef( 1.0/(vector_field.x()-1), 1.0/(vector_field.y()-1), 1.0);
 	calibrateColor(vector_field, scalar_field);
 
 	
     
 	vector< Vec2D<float> > seeds;
 
+	const int N = 400;
+
 	srand( 23123);
-    for(size_t i = 0; i < 1000; ++i) {
+    for(size_t i = 0; i < N; ++i) {
         // generate qusirandom point, more uniform distribution
         size_t ix = (i*222+rand()%10)%vector_field.x();
 		size_t iy = (i*621+rand()%10)%vector_field.y();
@@ -47,11 +49,11 @@ operator()(const Grid<Vec2D<float>>& vector_field,
 
 	}
 
-
+	float depth = 0;
 	for( auto& seed : seeds) {
-
-		drawStreamline(seed,  1.0, vector_field, scalar_field);
-        drawStreamline(seed, -1.0, vector_field, scalar_field);
+		depth += 2.0/N;
+		drawStreamline(seed,  1.0, vector_field, scalar_field, depth);
+        drawStreamline(seed, -1.0, vector_field, scalar_field, depth);
     }
 
 
@@ -78,13 +80,13 @@ Vec2D<float> step( Vec2D<float> origin, Vec2D<float> v) {
 	return origin + v*t;	
 }
  
-// point is in drawspace
 void 
 addVertices( vector<float>& vertices,
 			 vector<float>& colors,
 			 Vec2D<float> point,
 			 Vec2D<float> v1,
-			 QColor color) {
+			 QColor color,
+			 float z = 0.0) {
 	
 
 		
@@ -93,25 +95,25 @@ addVertices( vector<float>& vertices,
 	normal.x *= -1;
 	normal.normalize();
 	
-	Vec2D<float> p1 = point + normal*0.002;
-	Vec2D<float> p2 = point - normal*0.002;
+	Vec2D<float> p1 = point + normal*0.5;
+	Vec2D<float> p2 = point - normal*0.5;
 	
 	
 	for( int i = 0; i < 2; i++) {
 		colors.push_back( color.redF() );
 		colors.push_back( color.greenF() );
 		colors.push_back( color.blueF() );
-		colors.push_back( 0.03);
+		colors.push_back( 0.2);
 	}
 	
 	vertices.push_back(p1.x  );
 	vertices.push_back(p1.y  );
-	vertices.push_back(0.0 );
+	vertices.push_back(z );
 
 
 	vertices.push_back(p2.x  );
 	vertices.push_back(p2.y  );
-	vertices.push_back(0.0 );
+	vertices.push_back(z );
 	
 	
 }
@@ -127,7 +129,8 @@ DrawStreamlinesImplementation::
 drawStreamline(Vec2D<float> point,
                float dir,
                const Grid<Vec2D<float>>& vector_field,
-               const Grid<float>& scalar_field) {
+               const Grid<float>& scalar_field,
+			   float z) {
 
 	Vec2D<float> gridpoint { point.x * (vector_field.x()-1),
 			                 point.y * (vector_field.y()-1) };
@@ -137,21 +140,21 @@ drawStreamline(Vec2D<float> point,
 
 	Vec2D<float> v1 = interpolate(vector_field, point);
 
-
 	
 	v1 *= dir;
 	addVertices( vertices,
 				 colors,
-				 point,
+				 gridpoint,
 				 v1,
 				 getColorAtPoint( vector_field,
 								  scalar_field,
-								  point));
+								  point),
+				 z);
 
 	Vec2D<float> last_point = gridpoint;
 
 	bool early_exit = false;
-	for(size_t i = 0; i < 1000 && early_exit == false; i++) {
+	for(size_t i = 0; i < 700 && early_exit == false; i++) {
 
 		Vec2D<float> v1 = interpolate( vector_field,
 									   { gridpoint.x / (vector_field.x()-1), 
@@ -188,11 +191,12 @@ drawStreamline(Vec2D<float> point,
 
 			addVertices( vertices,
 						 colors,
-						 point,
+						 gridpoint,
 						 v1,
 						 getColorAtPoint( vector_field,
 										  scalar_field,
-										  point));
+										  point),
+						 z);
 			last_point = gridpoint;
 		}
 

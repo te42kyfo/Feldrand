@@ -41,7 +41,8 @@ protected:
     void drawStreamline(Vec2D<float> point,
                         float direction,
                         const Grid<Vec2D<float>>& vector_field,
-                        const Grid<float>& scalar_field);
+                        const Grid<float>& scalar_field,
+						float z = 0.0);
 
 
 	
