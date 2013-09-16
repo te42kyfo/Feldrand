@@ -166,12 +166,12 @@ namespace Feldrand {
 				const Cell& cell = src(ix, iy);
 				float vx, vy;
 				vx = -       cell.NW +          0.0 +       cell.NE
-					-       cell.W  +          0.0 +       cell.E
-					-       cell.SW +          0.0 +       cell.SE;
+					 -       cell.W  +          0.0 +       cell.E
+					 -       cell.SW +          0.0 +       cell.SE;
 
-				vy =         cell.NW +       cell.N +       cell.NE
+				vy = -         cell.NW -       cell.N -       cell.NE
 					+           0.0 +          0.0 +           0.0
-					-       cell.SW -       cell.S -       cell.SE;
+					+       cell.SW +       cell.S +       cell.SE;
 
 				(*g)(ix, iy) = {vx, vy};
 			}

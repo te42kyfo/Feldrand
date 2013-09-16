@@ -54,7 +54,7 @@ operator()(const Grid<Vec2D<float>>& vector_field,
             glScalef(1.0 / (float)vector_field.x() * cells_per_dim,
                      1.0 / (float)vector_field.y() * cells_per_dim, 1.0f);
             glTranslatef(0.5f, 0.5f, 0.0f);
-            glRotatef(atan2(mean.x,mean.y) / (2.0f * M_PI) * 360.0f - 90.0,
+            glRotatef(atan2(mean.y,mean.x) / (2.0f * M_PI) * 360.0f,
                       0.0f, 0.0f, 1.0f);
             QColor color = getColorAtPoint(vector_field, scalar_field, point);
             glColor3f(color.redF(), color.greenF(), color.blueF());

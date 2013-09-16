@@ -28,13 +28,16 @@ void
 DrawStreamlinesImplementation::
 operator()(const Grid<Vec2D<float>>& vector_field,
            const Grid<float>& scalar_field) {
-    calibrateColor(vector_field, scalar_field);
+    
+	glScalef( 0.5f, 0.5f, 0.5f);
+	calibrateColor(vector_field, scalar_field);
 
+	
     
 	vector< Vec2D<float> > seeds;
 
 	srand( 23123);
-    for(size_t i = 0; i < 2000; ++i) {
+    for(size_t i = 0; i < 1000; ++i) {
         // generate qusirandom point, more uniform distribution
         size_t ix = (i*222+rand()%10)%vector_field.x();
 		size_t iy = (i*621+rand()%10)%vector_field.y();
@@ -135,7 +138,7 @@ drawStreamline(Vec2D<float> point,
 	Vec2D<float> v1 = interpolate(vector_field, point);
 
 
-	v1.y *= -1;
+	
 	v1 *= dir;
 	addVertices( vertices,
 				 colors,
@@ -153,11 +156,8 @@ drawStreamline(Vec2D<float> point,
 		Vec2D<float> v1 = interpolate( vector_field,
 									   { gridpoint.x / (vector_field.x()-1), 
 										 gridpoint.y / (vector_field.y()-1) } );
-
-
 		v1 *= dir;
-		v1.y *= -1; // Right hand vs left hand coordinate systems?
-		
+				
 
 		// Calculate the predictor point and get the direction at that point.
 		Vec2D<float> predictor = step( gridpoint, v1 );
@@ -167,28 +167,21 @@ drawStreamline(Vec2D<float> point,
 	
 		
 		v2 *= dir;
-		v2.y *= -1; // Coordinate system correction
-		
 
 		v1 = (v1 + v2)/2.0;
 		if( v1.x*v1.x+v1.y*v1.y < 0.00001)
 			early_exit = true;
-		
 
 		gridpoint = step( gridpoint, v1);
-
 	
 		if( gridpoint.x < 6 || gridpoint.x > vector_field.x()-6 || 
 			gridpoint.y < 6 || gridpoint.y > vector_field.y()-6 ) 
 			early_exit = true;
-	
 		
 		auto point = Vec2D<float> { gridpoint.x / (vector_field.x()-1),
 									gridpoint.y / (vector_field.y()-1) };
 
 		v1 = interpolate(vector_field, point);
-		v1.y *= -1;
-
 		v1 = v1.normalize();
 		v1 *= dir;
 		if( early_exit || (gridpoint-last_point).normalize() * v1 < 0.9999) {

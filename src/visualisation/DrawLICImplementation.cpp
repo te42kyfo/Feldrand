@@ -115,10 +115,10 @@ integrateStreamline(Vec2D<float> point,
     for(size_t i = 0; i < range / 2; ++i) {
         
         Vec2D<float> v1 =interpolate(vector_field, up).normalize();
-		v1.y *= -1;
+		
 		Vec2D<float> euler = up + v1*step_size;
  		Vec2D<float> v2 =interpolate(vector_field, euler).normalize();
-		v2.y *= -1;
+		
 		up += (v1+v2) / 2.0f * step_size;
 		
 
@@ -130,10 +130,10 @@ integrateStreamline(Vec2D<float> point,
     for(size_t i = 0; i < range / 2; ++i) {
 		
 		Vec2D<float> v1 = interpolate(vector_field, down).normalize();
-		v1.y *= -1;
+		
 		Vec2D<float> euler = down - v1*step_size;
 		Vec2D<float> v2 = interpolate(vector_field, euler).normalize();
-		v2.y *= -1;
+		
 		down -= (v1+v2) / 2.0f * step_size;     
 
         if(down.x < 0.0 || down.x >= 1.0 || down.y < 0.0 || down.y >= 1.0) break;
@@ -155,10 +155,10 @@ integrateStreamline(Vec2D<float> point,
     for(size_t i = 0;; ++i) {
 
         Vec2D<float> v1 =interpolate(vector_field, up).normalize();
-		v1.y *= -1;
+
 		Vec2D<float> euler = up + v1*step_size;
  		Vec2D<float> v2 =interpolate(vector_field, euler).normalize();
-		v2.y *= -1;
+
 		up += (v1+v2) / 2.0f * step_size;
         
         
@@ -178,10 +178,10 @@ integrateStreamline(Vec2D<float> point,
     for(size_t i = 0;; ++i) {
 
 		Vec2D<float> v1 = interpolate(vector_field, down).normalize();
-		v1.y *= -1;
+
 		Vec2D<float> euler = down - v1*step_size;
  		Vec2D<float> v2 = interpolate(vector_field, euler).normalize();
-		v2.y *= -1;
+
 		down -= (v1+v2) / 2.0f * step_size;     
 
 
