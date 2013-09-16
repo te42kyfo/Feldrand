@@ -21,7 +21,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <iterator>
 #include <cstring>
 #include "core/Simulation.hpp"
-#include "core/MRT_LBM.hpp"
+#include "core/BGK_OCL.hpp"
+#include "core/BGK_OCL.hpp"
 
 using namespace std;
 
@@ -55,12 +56,12 @@ Simulation::Simulation(double width /*in meters*/,
                        double height /*in meters*/,
                        size_t grid_width,
                        size_t grid_height)
-    :impl(new MRT_LBM(width, height,
+    :impl(new BGK_OCL(width, height,
                       grid_width,
                       grid_height)) {}
 
 Simulation::Simulation()
-    :impl(new MRT_LBM()) {}
+    :impl(new BGK_OCL()) {}
 
 Simulation::Simulation(Simulation&& other)
     : impl(other.impl) {
@@ -69,7 +70,7 @@ Simulation::Simulation(Simulation&& other)
 
 Simulation::Simulation(const Simulation& other) {
     // TODO
-    impl = new MRT_LBM(static_cast<MRT_LBM&>(*(other.impl)));
+    impl = new BGK_OCL(static_cast<BGK_OCL&>(*(other.impl)));
 }
 
 Simulation::~Simulation() {

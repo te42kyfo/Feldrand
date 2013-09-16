@@ -98,7 +98,7 @@ addVertices( vector<float>& vertices,
 		colors.push_back( color.redF() );
 		colors.push_back( color.greenF() );
 		colors.push_back( color.blueF() );
-		colors.push_back( color.greenF() / 15.0 + 0.03);
+		colors.push_back( 0.03);
 	}
 	
 	vertices.push_back(p1.x  );

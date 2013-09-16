@@ -396,4 +396,21 @@ operator>>(std::istream &src,
     sim.read_data(src);
     return src;
 }
+
+
+	std::ostream& operator<<(std::ostream& dest, const Cell& cell) {
+		dest << cell.NW << cell.N << cell.NE
+			 << cell.W << cell.C << cell.E
+			 << cell.SW << cell.S << cell.SE;
+		return dest;
+	}
+
+	std::istream& operator>>(std::istream& src, Cell& cell) {
+		src >> cell.NW >> cell.N >> cell.NE
+			>> cell.W >> cell.C >> cell.E
+			>> cell.SW >> cell.S >> cell.SE;
+		return src;
+	}
+
+
 }

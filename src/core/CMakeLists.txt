@@ -2,6 +2,7 @@ include_directories(${FELDRAND_INCLUDE_DIR})
 
 add_library(feldrand SHARED
   MRT_LBM.cpp
+  BGK_OCL.cpp
   SimulationImplementation.cpp
   Simulation.cpp
   SimulationUtilities.cpp

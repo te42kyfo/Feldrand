@@ -34,117 +34,128 @@ namespace std { class thread; }
 
 namespace Feldrand {
 
-class Simulation::SimulationImplementation {
-protected:
-    /* These funcitons correspond to the Simulation API */
-    SimulationImplementation();
-    SimulationImplementation(double width /*in meters*/,
-                             double height /*in meters*/,
-                             size_t grid_width,
-                             size_t grid_height);
-public: // TODO copy operator
-    SimulationImplementation(const SimulationImplementation& other);
-    virtual ~SimulationImplementation();
+	struct Cell {
+		float NW, N, NE;
+		float W,  C,  E;
+		float SW, S, SE;
+		cell_t type;
+	};
 
-    template<typename T>
-    void action(Action what, T data);
-    void action(Action what);
+	std::ostream& operator<<(std::ostream& dest, const Cell& cell);
+	std::istream& operator>>(std::istream& src, Cell& cell);
 
-    template<typename T>
-    auto get(Data what) -> T;
+	
+	class Simulation::SimulationImplementation {
+	protected:
+		/* These funcitons correspond to the Simulation API */
+		SimulationImplementation();
+		SimulationImplementation(double width /*in meters*/,
+								 double height /*in meters*/,
+								 size_t grid_width,
+								 size_t grid_height);
+	public: // TODO copy operator
+		SimulationImplementation(const SimulationImplementation& other);
+		virtual ~SimulationImplementation();
 
-    void beginMultiple();
-    void endMultiple();
+		template<typename T>
+		void action(Action what, T data);
+		void action(Action what);
 
-private:
-    void loop();
-    void advance();
-    void handle_requests();
-    void do_pause();
-    void do_run();
-    void do_steps(size_t steps);
+		template<typename T>
+		auto get(Data what) -> T;
 
-    auto get_width()         -> double;
-    auto get_height()        -> double;
-    auto get_gridWidth()     -> size_t;
-    auto get_gridHeight()    -> size_t;
-    auto get_timestep_id()   -> size_t;
+		void beginMultiple();
+		void endMultiple();
 
-protected:
-    /* interface for iterative fluid solvers */
-    virtual void one_iteration() = 0;
-    virtual void do_clear() = 0;
-    virtual void do_draw(int x, int y,
-                         std::shared_ptr<const Grid<mask_t>> mask_ptr,
-                         cell_t type) = 0;
-    virtual auto get_velocity_grid() -> Grid<Vec2D<float>>* = 0;
-    virtual auto get_density_grid()  -> Grid<float>* = 0;
-    virtual auto get_type_grid()     -> Grid<cell_t>* = 0;
-    virtual void write_data(std::ostream& dest) = 0;
-    virtual void read_data(std::istream& src) = 0;
+	private:
+		void loop();
+		void advance();
+		void handle_requests();
+		void do_pause();
+		void do_run();
+		void do_steps(size_t steps);
 
-protected:
-    double width;
-    double height;
-    size_t gridWidth;
-    size_t gridHeight;
-    double kinematic_viscosity;
-    double density;
-    /* 1.0 is realtime, 2.0 is twice as fast, 0.5 is half as fast*/
-    double speed;
-    size_t ts_id;
+		auto get_width()         -> double;
+		auto get_height()        -> double;
+		auto get_gridWidth()     -> size_t;
+		auto get_gridHeight()    -> size_t;
+		auto get_timestep_id()   -> size_t;
 
-    std::thread* work_thread;
+	protected:
+		/* interface for iterative fluid solvers */
+		virtual void one_iteration() = 0;
+		virtual void do_clear() = 0;
+		virtual void do_draw(int x, int y,
+							 std::shared_ptr<const Grid<mask_t>> mask_ptr,
+							 cell_t type) = 0;
+		virtual auto get_velocity_grid() -> Grid<Vec2D<float>>* = 0;
+		virtual auto get_density_grid()  -> Grid<float>* = 0;
+		virtual auto get_type_grid()     -> Grid<cell_t>* = 0;
+		virtual void write_data(std::ostream& dest) = 0;
+		virtual void read_data(std::istream& src) = 0;
 
-    std::mutex rw_mutex;
-    std::chrono::time_point<std::chrono::high_resolution_clock> timestamp;
+	protected:
+		double width;
+		double height;
+		size_t gridWidth;
+		size_t gridHeight;
+		double kinematic_viscosity;
+		double density;
+		/* 1.0 is realtime, 2.0 is twice as fast, 0.5 is half as fast*/
+		double speed;
+		size_t ts_id;
 
-    std::mutex todo_queue_mutex;
-    std::queue<std::function<void()>> todo_queue;
+		std::thread* work_thread;
 
-    /* tell the simulation to pause or run */
-    bool pause;
-    /* set to true before deletion to collect the work_thread */
-    bool join;
-    /* how many immediate simulation steps shall be done */
-    size_t stepsToDo;
+		std::mutex rw_mutex;
+		std::chrono::time_point<std::chrono::high_resolution_clock> timestamp;
 
-    friend std::ostream&
-    operator<<(std::ostream &dest,
-               Simulation::SimulationImplementation& sim);
-    friend std::istream&
-    operator>>(std::istream &src,
-               Simulation::SimulationImplementation& sim);
-};
+		std::mutex todo_queue_mutex;
+		std::queue<std::function<void()>> todo_queue;
 
-template<>
-void Simulation::SimulationImplementation::
-action<Simulation::draw_data&>(Action what, Simulation::draw_data& data);
-template<>
-void Simulation::SimulationImplementation::
-action<size_t>(Action what, size_t data);
+		/* tell the simulation to pause or run */
+		bool pause;
+		/* set to true before deletion to collect the work_thread */
+		bool join;
+		/* how many immediate simulation steps shall be done */
+		size_t stepsToDo;
 
-template<typename T>
-auto Simulation::SimulationImplementation::
-get(Data what) -> T {
-    throw std::runtime_error("Simulation::get() called with invalid "
-                             "template type");
-}
-template<>
-auto Simulation::SimulationImplementation::
-get<double>(Data what) -> double;
-template<>
-auto Simulation::SimulationImplementation::
-get<size_t>(Data what) -> size_t;
-template<>
-auto Simulation::SimulationImplementation::
-get<Grid<Vec2D<float>>*>(Data what) -> Grid<Vec2D<float>>*;
-template<>
-auto Simulation::SimulationImplementation::
-get<Grid<float>*>(Data what) -> Grid<float>*;
-template<>
-auto Simulation::SimulationImplementation::
-get<Grid<cell_t>*>(Data what) -> Grid<cell_t>*;
+		friend std::ostream&
+		operator<<(std::ostream &dest,
+				   Simulation::SimulationImplementation& sim);
+		friend std::istream&
+		operator>>(std::istream &src,
+				   Simulation::SimulationImplementation& sim);
+	};
+
+	template<>
+	void Simulation::SimulationImplementation::
+	action<Simulation::draw_data&>(Action what, Simulation::draw_data& data);
+	template<>
+	void Simulation::SimulationImplementation::
+	action<size_t>(Action what, size_t data);
+
+	template<typename T>
+	auto Simulation::SimulationImplementation::
+	get(Data what) -> T {
+		throw std::runtime_error("Simulation::get() called with invalid "
+								 "template type");
+	}
+	template<>
+	auto Simulation::SimulationImplementation::
+	get<double>(Data what) -> double;
+	template<>
+	auto Simulation::SimulationImplementation::
+	get<size_t>(Data what) -> size_t;
+	template<>
+	auto Simulation::SimulationImplementation::
+	get<Grid<Vec2D<float>>*>(Data what) -> Grid<Vec2D<float>>*;
+	template<>
+	auto Simulation::SimulationImplementation::
+	get<Grid<float>*>(Data what) -> Grid<float>*;
+	template<>
+	auto Simulation::SimulationImplementation::
+	get<Grid<cell_t>*>(Data what) -> Grid<cell_t>*;
 }
 
 #endif // FELDRAND__SIMULATION_IMPLEMENTATION_HPP
