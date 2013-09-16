@@ -35,7 +35,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
 						  QGL::DepthBuffer), parent),
       draw_streamlines(),
       draw_arrows(),
-      draw_lic(600, 150),
+      draw_lic(width()/2.0, height()/2.0),
       drawing_routine(&draw_arrows)
 {
     circle_mask = createCircleMask(20);

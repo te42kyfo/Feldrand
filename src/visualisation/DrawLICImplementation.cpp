@@ -30,9 +30,10 @@ DrawLICImplementation::DrawLICImplementation(size_t width, size_t height)
     : random_texture(width, height),
       texture(width, height),
       marked(width, height) {
-    for(size_t iy = 0; iy < height; ++iy) {
+	
+	for(size_t iy = 0; iy < height; ++iy) {
         for(size_t ix = 0; ix < width; ++ix) {
-            random_texture(ix, iy) = rand() % 2;
+            random_texture(ix, iy) = (rand() % 1200)/1000.0 - 0.1;
         }
     }
 }
@@ -46,10 +47,11 @@ void DrawLICImplementation::operator()(const Grid<Vec2D<float>>& vector_field,
     // a good integration range is a tenth of the domain
     size_t cells = texture.x() * texture.y();
     size_t L = sqrt(cells) / 10;
-    size_t range = 2 * L + 1;
+    size_t range = 10;
     float k = 1.0 / (float)range;
-    float cell_size = 1.0 / texture.x();
-    float step_size = cell_size * 0.5;
+    float cell_size = 1.0 / vector_field.x();
+    float step_size = cell_size;
+
     // generate random point
     srand(42);
     for(size_t i = 0; i < texture.x() * texture.y() / 2; ++i) {
@@ -98,35 +100,46 @@ void DrawLICImplementation::operator()(const Grid<Vec2D<float>>& vector_field,
     glDeleteTextures(1, &t);
 }
 
-void DrawLICImplementation::integrateStreamline(Vec2D<float> point, float step_size,
-                                  size_t range, float k,
-                                  const Grid<Vec2D<float>>& vector_field,
-                                  const Grid<float>& scalar_field) {
+void 
+DrawLICImplementation::
+integrateStreamline(Vec2D<float> point,
+					float step_size,
+					size_t range, float k,
+					const Grid<Vec2D<float>>& vector_field,
+					const Grid<float>& scalar_field) {
     vector<float> ring(range, 0.5 * k);
     size_t ring_pos = 0;
     size_t tolerance = 5;
     Vec2D<float> up = point;
+
     for(size_t i = 0; i < range / 2; ++i) {
-        Vec2D<float> euler = up
-            + interpolate(vector_field, up).normalize() * step_size;
-        up += euler
-            + interpolate(vector_field, euler).normalize() * step_size;
-        up /= 2.0;
+        
+        Vec2D<float> v1 =interpolate(vector_field, up).normalize();
+		v1.y *= -1;
+		Vec2D<float> euler = up + v1*step_size;
+ 		Vec2D<float> v2 =interpolate(vector_field, euler).normalize();
+		v2.y *= -1;
+		up += (v1+v2) / 2.0f * step_size;
+		
+
         if(up.x <= 0.0 || up.x >= 1.0 || up.y <= 0.0 || up.y >= 1.0) break;
         if(grid_ref(marked, up) >= tolerance) break;
         ring[(ring_pos + i) % range] = k * interpolate(random_texture, up);
     }
-    Vec2D<float> down = point;
+	Vec2D<float> down = point;
     for(size_t i = 0; i < range / 2; ++i) {
-        Vec2D<float> euler = down
-            + interpolate(vector_field, down).normalize() * step_size * -1.0;
-        down += euler
-            + interpolate(vector_field, euler).normalize() * step_size * -1.0;
-        down /= 2.0;
+		
+		Vec2D<float> v1 = interpolate(vector_field, down).normalize();
+		v1.y *= -1;
+		Vec2D<float> euler = down - v1*step_size;
+		Vec2D<float> v2 = interpolate(vector_field, euler).normalize();
+		v2.y *= -1;
+		down -= (v1+v2) / 2.0f * step_size;     
+
         if(down.x < 0.0 || down.x >= 1.0 || down.y < 0.0 || down.y >= 1.0) break;
         if(grid_ref(marked, down) >= tolerance) break;
         ring[(ring_pos + range - i) % range] = k * interpolate(random_texture, down);
-    }
+		}
 
     // determine the first value
     float val = 0.0f;
@@ -140,12 +153,16 @@ void DrawLICImplementation::integrateStreamline(Vec2D<float> point, float step_s
     vector<float> up_ring(ring);
     size_t up_pos = ring_pos;
     for(size_t i = 0;; ++i) {
-        Vec2D<float> euler = up
-            + interpolate(vector_field, up).normalize() * step_size;
-        up += euler
-            + interpolate(vector_field, euler).normalize() * step_size;
-        up /= 2.0;
-        if(up.x <= 0.0 || up.x >= 1.0 || up.y <= 0.0 || up.y >= 1.0) break;
+
+        Vec2D<float> v1 =interpolate(vector_field, up).normalize();
+		v1.y *= -1;
+		Vec2D<float> euler = up + v1*step_size;
+ 		Vec2D<float> v2 =interpolate(vector_field, euler).normalize();
+		v2.y *= -1;
+		up += (v1+v2) / 2.0f * step_size;
+        
+        
+		if(up.x <= 0.0 || up.x >= 1.0 || up.y <= 0.0 || up.y >= 1.0) break;
         if(grid_ref(marked, up) >= tolerance) break;
         float f = k * interpolate(random_texture, up);
 
@@ -159,11 +176,15 @@ void DrawLICImplementation::integrateStreamline(Vec2D<float> point, float step_s
     vector<float>& down_ring = ring;
     size_t down_pos = ring_pos;
     for(size_t i = 0;; ++i) {
-        Vec2D<float> euler = down
-            + interpolate(vector_field, down).normalize() * step_size * -1.0;
-        down += euler
-            + interpolate(vector_field, euler).normalize() * step_size * -1.0;
-        down /= 2.0;
+
+		Vec2D<float> v1 = interpolate(vector_field, down).normalize();
+		v1.y *= -1;
+		Vec2D<float> euler = down - v1*step_size;
+ 		Vec2D<float> v2 = interpolate(vector_field, euler).normalize();
+		v2.y *= -1;
+		down -= (v1+v2) / 2.0f * step_size;     
+
+
         if(down.x <= 0.0 || down.x >= 1.0 || down.y <= 0.0 || down.y >= 1.0) break;
         if(grid_ref(marked, down) >= tolerance) break;
         float f = k * interpolate(random_texture, down);
@@ -174,7 +195,7 @@ void DrawLICImplementation::integrateStreamline(Vec2D<float> point, float step_s
         val += f;
         grid_ref(texture, down) += val;
         grid_ref(marked,  down) += 1;
-    }
+	}
 }
 
 void DrawLICImplementation::refreshGrids() {
