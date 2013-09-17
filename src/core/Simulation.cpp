@@ -28,7 +28,7 @@ using namespace std;
 
 namespace Feldrand {
 
-	typedef MRT_LBM SimulationType;
+	typedef BGK_OCL SimulationType;
 
 	Simulation Simulation::create_dwdhgt(double width,
 										 double height,

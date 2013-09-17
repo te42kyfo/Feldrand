@@ -24,6 +24,11 @@ using namespace std;
 
 namespace Feldrand {
 
+	namespace {
+		const size_t LINE_COUNT = 400;
+		const size_t BORDER_PADDING = 2;
+	}
+
 void
 DrawStreamlinesImplementation::
 operator()(const Grid<Vec2D<float>>& vector_field,
@@ -36,13 +41,14 @@ operator()(const Grid<Vec2D<float>>& vector_field,
     
 	vector< Vec2D<float> > seeds;
 
-	const int N = 400;
 
 	srand( 23123);
-    for(size_t i = 0; i < N; ++i) {
+    for(size_t i = 0; i < LINE_COUNT; ++i) {
         // generate qusirandom point, more uniform distribution
-        size_t ix = (i*222+rand()%10)%vector_field.x();
-		size_t iy = (i*621+rand()%10)%vector_field.y();
+        size_t ix = (i*222+rand()%10)%(vector_field.x()-BORDER_PADDING*2) + 
+			BORDER_PADDING;
+		size_t iy = (i*621+rand()%10)%(vector_field.y()-BORDER_PADDING*2) + 
+			BORDER_PADDING;
         Vec2D<float> point((float)ix / (float)vector_field.x(),
                      (float)iy / (float)vector_field.y());
 		seeds.push_back(point);
@@ -51,7 +57,7 @@ operator()(const Grid<Vec2D<float>>& vector_field,
 
 	float depth = 0;
 	for( auto& seed : seeds) {
-		depth += 2.0/N;
+		depth += 2.0/LINE_COUNT;
 		drawStreamline(seed,  1.0, vector_field, scalar_field, depth);
         drawStreamline(seed, -1.0, vector_field, scalar_field, depth);
     }
@@ -103,7 +109,7 @@ addVertices( vector<float>& vertices,
 		colors.push_back( color.redF() );
 		colors.push_back( color.greenF() );
 		colors.push_back( color.blueF() );
-		colors.push_back( 0.2);
+		colors.push_back( 100.0/LINE_COUNT );
 	}
 	
 	vertices.push_back(p1.x  );
@@ -177,8 +183,10 @@ drawStreamline(Vec2D<float> point,
 
 		gridpoint = step( gridpoint, v1);
 	
-		if( gridpoint.x < 6 || gridpoint.x > vector_field.x()-6 || 
-			gridpoint.y < 6 || gridpoint.y > vector_field.y()-6 ) 
+		if( gridpoint.x < BORDER_PADDING ||
+			gridpoint.x > vector_field.x()-BORDER_PADDING || 
+			gridpoint.y < BORDER_PADDING || 
+			gridpoint.y > vector_field.y()-BORDER_PADDING ) 
 			early_exit = true;
 		
 		auto point = Vec2D<float> { gridpoint.x / (vector_field.x()-1),
