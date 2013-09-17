@@ -5,6 +5,7 @@ include_directories(${FELDRAND_INCLUDE_DIR}/visualisation)
 find_package(OpenGL REQUIRED)
 find_package(Qt4 REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(CLEW REQUIRED)
 include(${QT_USE_FILE})
 
 add_library(feldrand_visualisation SHARED
@@ -28,6 +29,6 @@ set_target_properties(
 
 target_link_libraries(
   feldrand_visualisation
- ${GLEW_LIBRARIES}
+  ${GLEW_LIBRARIES}
   ${QT_LIBRARIES}
   ${OPENGL_LIBRARIES})

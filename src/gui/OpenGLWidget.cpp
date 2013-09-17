@@ -241,7 +241,7 @@ OpenGLWidget::redraw() {
 void
 OpenGLWidget::onIdle() {
     updateGL();
-    // every 16ms -> roughly 60fps
+    // every 33ms -> roughly 30fps
     QTimer::singleShot( 33, this, SLOT(onIdle()));
 }
 
