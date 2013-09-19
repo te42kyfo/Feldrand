@@ -34,6 +34,7 @@ namespace Feldrand {
 		MRT_LBM(MRT_LBM& other);
 		virtual ~MRT_LBM();
 	protected:
+		void init();
 		void one_iteration();
 		void do_clear();
 		void do_draw(int x, int y,

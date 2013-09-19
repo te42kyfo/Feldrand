@@ -37,7 +37,8 @@ public:
         hostarray = 0;
     }
     CLArrayInt( const CLArrayInt &source ) { // copy constructor
-        throw std::runtime_error("can't assign these...");
+		std::cout << source.N << "\n";
+		throw std::runtime_error("can't assign these...");
     }
     CLArrayInt &operator=( const CLArrayInt &two ) { // assignment operator
        if( this == &two ) { // self-assignment

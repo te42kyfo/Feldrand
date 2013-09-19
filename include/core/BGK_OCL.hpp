@@ -19,6 +19,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #define FELDRAND__BGK_OCL_HPP
 
 #include "core/SimulationImplementation.hpp"
+#include "cell_type.hpp"
 #include "OpenClHelper/OpenCLHelper.h"
 #include "OpenClHelper/CLKernel.h"
 
@@ -34,6 +35,7 @@ namespace Feldrand {
 		BGK_OCL(BGK_OCL& other);
 		virtual ~BGK_OCL();
 	protected:
+		void init();
 		void one_iteration();
 		void do_clear();
 		void do_draw(int x, int y,
@@ -46,7 +48,17 @@ namespace Feldrand {
 		void read_data(std::istream& src);
 		
 	private:
-		CLKernel* kernel;
+		CLKernel* getVelocityKernel;
+		CLKernel* getDensityKernel;
+		CLKernel* simulationStepKernel;
+		OpenCLHelper* cl;
+		CLArrayFloat* dst[9];
+		CLArrayFloat* src[9];
+		CLArrayInt* flag_field;
+		
+		size_t global_size[2];
+		size_t local_size[2];
+
 		std::vector<float> vel;
 		
 	};

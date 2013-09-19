@@ -263,10 +263,13 @@ endMultiple() {
 
 void Simulation::SimulationImplementation::
 loop() {
-    while(!join) {
+	init();
+	while(!join) {
+		for( size_t n = 0; n < 10; n++) {
+			one_iteration();
+		}
 
-        one_iteration();
-        advance();
+		advance();
     }
 }
 
@@ -274,23 +277,25 @@ void Simulation::SimulationImplementation::
 advance() {
     ++ts_id;
 
+
     handle_requests();
 
     using namespace std::chrono;
     microseconds given_time(2000); // TODO calculate this properly
-    microseconds compute_time = duration_cast<microseconds>(high_resolution_clock::now() - timestamp);
-
-    rw_mutex.unlock();
-    if(compute_time < given_time)
-        this_thread::sleep_for(given_time - compute_time);
-
+    milliseconds compute_time =
+		duration_cast<milliseconds>(high_resolution_clock::now() - timestamp);
+    timestamp = high_resolution_clock::now();
+	
     while(pause) {
         this_thread::sleep_for(given_time);
         handle_requests();
     }
+	this_thread::sleep_for( milliseconds(100) );
 
-    rw_mutex.lock();
-    timestamp = high_resolution_clock::now();
+	std::cout  << "\r" <<  compute_time.count() << " ms  ";
+	std::cout.flush();
+
+
 }
 
 

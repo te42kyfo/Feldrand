@@ -78,6 +78,10 @@ namespace Feldrand {
 
 	MRT_LBM::~MRT_LBM() {}
 
+	// nuthin', doesnt need it.
+	void MRT_LBM::init() {
+	}
+
 	void MRT_LBM::one_iteration() {
 		collide();
 		stream();
@@ -266,7 +270,7 @@ namespace Feldrand {
 	/* the collision step of the MRT-LBM simulation. The moments of each
 	 * cell are calculated and individually relaxed towards equilibrium. */
 	void MRT_LBM::collide() {
-		float omega = 1.99;
+		float omega = 1.8;
 		for(size_t iy = 0; iy < gridHeight; ++iy) {
 			for(size_t ix = 0; ix < gridWidth; ++ix) {
 				Cell& cell = src(ix, iy);

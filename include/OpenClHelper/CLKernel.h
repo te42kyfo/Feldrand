@@ -17,9 +17,11 @@ public:
         this->kernel = kernel;
     }
     CLKernel( const CLKernel &kernel ) {
-        throw runtime_error("can't assign CLKernel");
+        cout << kernel.error << " ";
+		throw runtime_error("can't assign CLKernel");
     }
     CLKernel &operator=( const CLKernel &kernel ) {
+		cout << kernel.error << " ";
         throw runtime_error("can't assign CLKernel");
     }
     ~CLKernel() {
@@ -162,12 +164,15 @@ public:
     //}
 
     //void retrieveresultsandcleanup() {
-        for( int i = 0; i < outputArgBuffers.size(); i++ ) {
-            clEnqueueReadBuffer(openclhelper->queue, outputArgBuffers[i], CL_TRUE, 0, outputArgSizes[i], outputArgPointers[i], 0, NULL, NULL);            
+        for( size_t i = 0; i < outputArgBuffers.size(); i++ ) {
+            clEnqueueReadBuffer(openclhelper->queue,
+								outputArgBuffers[i],
+								CL_TRUE, 0, outputArgSizes[i], 
+								outputArgPointers[i], 0, NULL, NULL);            
         }
 
 
-        for(int i = 0; i < buffers.size(); i++ ) {
+        for(size_t i = 0; i < buffers.size(); i++ ) {
             clReleaseMemObject(buffers[i]);
         }
         buffers.clear();

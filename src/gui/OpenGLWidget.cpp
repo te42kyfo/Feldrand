@@ -204,7 +204,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 
 bool
 OpenGLWidget::draw() {
-    lock_guard<mutex> lock(renderMutex);
+    //lock_guard<mutex> lock(renderMutex);
     if(!sim) return false;
 
     sim->beginMultiple();
@@ -220,6 +220,17 @@ OpenGLWidget::draw() {
 
 bool
 OpenGLWidget::redraw() {
+
+	using namespace std::chrono;
+	
+	milliseconds duration1 = duration_cast<milliseconds>
+		(high_resolution_clock::now()-timestamp);
+	
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> redraw_start =
+		std::chrono::high_resolution_clock::now();
+	
+
     glColor3f(1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT |
 			GL_DEPTH_BUFFER_BIT);
@@ -232,8 +243,17 @@ OpenGLWidget::redraw() {
     // with (0.0, 0.0) being the upper left corner
     glOrtho(0.0, 1.0, 1.0, 0.0, -5, 5);
 
-    (*drawing_routine)(*vel_ptr, *dens_ptr);
 
+	(*drawing_routine)(*vel_ptr, *dens_ptr);
+	
+	
+	milliseconds duration2 = duration_cast<milliseconds>
+		(high_resolution_clock::now() - redraw_start);
+
+	//std::cout << duration1.count() << "ms    " 
+	//		  << duration2.count() << "ms                  ";
+
+	timestamp = chrono::high_resolution_clock::now();
 
     return true;
 }
@@ -242,7 +262,7 @@ void
 OpenGLWidget::onIdle() {
     updateGL();
     // every 33ms -> roughly 30fps
-    QTimer::singleShot( 33, this, SLOT(onIdle()));
+    QTimer::singleShot( 5, this, SLOT(onIdle()));
 }
 
 

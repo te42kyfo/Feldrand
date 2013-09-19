@@ -83,6 +83,7 @@ namespace Feldrand {
 
 	protected:
 		/* interface for iterative fluid solvers */
+		virtual void init() = 0;
 		virtual void one_iteration() = 0;
 		virtual void do_clear() = 0;
 		virtual void do_draw(int x, int y,

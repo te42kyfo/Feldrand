@@ -112,28 +112,53 @@ calibrateColor(const Grid<Vec2D<float>> vector_field,
                const Grid<float> scalar_field) {
     size_t grid_points = scalar_field.x() * scalar_field.y();
     size_t tol = grid_points * tolerance;
-    std::vector<float> buf(grid_points);
+   
 
-    // copy all values to a buffer and sort them there
+	// Funky single pass mean/standard deviation
+	float M = 0; 
+	float Q = 0;
+	size_t k = 1;
+	// copy all values to a buffer and sort them there
     if(use_color_mono) return;
-    if(use_color_vec_abs) {
-        for(size_t iy = 0; iy < scalar_field.y(); ++iy) {
-            for(size_t ix = 0; ix < scalar_field.x(); ++ix) {
-                buf[iy * scalar_field.x() + ix] = vector_field(ix, iy).abs();
-            }
-        }
-    } else {
-        for(size_t iy = 0; iy < scalar_field.y(); ++iy) {
-            for(size_t ix = 0; ix < scalar_field.x(); ++ix) {
-                buf[iy * scalar_field.x() + ix] = scalar_field(ix, iy);
-            }
-        }
-    }
-    std::sort(buf.begin(), buf.end(), std::greater<float>());
+	
+	float average = 0;
 
-    max_value = buf[tol];
-    min_value = buf[grid_points - tol - 1];
-    // avoid later division by zero if interval is too small
+	for(size_t iy = 0; iy < scalar_field.y(); iy+=2) {
+		for(size_t ix = 0; ix < scalar_field.x(); ix++) {
+				
+			float x;
+			if( use_color_vec_abs )
+				x  = vector_field(ix, iy).sqlength();
+			else 
+				x = scalar_field(ix, iy);	
+			
+			average += x;
+
+			if( k == 1) {
+				M = x;
+				Q = 0;
+			} else {
+				Q += (k-1) * (x-M)*(x-M) / k; 					
+				M += (x - M) / k;
+			}
+			k++;
+		}
+	}
+
+	float varSquared = Q/k;
+	float a = 1;
+	float b = 2*M;
+	float c = -varSquared;
+
+	float var = (-b + sqrt( b*b - 4*a*c) ) / 2 / a;
+	float sd = sqrt(var);
+
+	//std::cout << "\n" << sqrt(M) << " " << sd << "\n";
+
+	max_value = sqrt(M) + 1.7*sd;
+	min_value = sqrt(M) - 2*sd;
+
+
     if(max_value - min_value <= 0.00001) min_value = max_value - 0.0001;
 }
 

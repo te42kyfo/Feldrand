@@ -89,6 +89,12 @@ public:
     inline T abs() const {
         return std::sqrt((*this) * (*this));
     }
+
+   inline T sqlength() const {
+        return x*x+y*x;
+    }
+
+
     inline Vec2D& normalize() {
         T n = (*this).abs();
         // avoid inf

@@ -176,6 +176,7 @@ namespace Feldrand {
 	std::istream& operator>>(std::istream& src, Simulation::Data& what) {
 		string s;
 		src >> s;
+		
 		// TODO
 		return src;
 	}

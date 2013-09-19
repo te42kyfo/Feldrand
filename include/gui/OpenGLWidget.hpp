@@ -18,9 +18,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef FELDRAND__OPENGL_WIDGET_HPP
 #define FELDRAND__OPENGL_WIDGET_HPP
 
-#include <GL/glew.h> //Has to be included bedore QGLWidget
+#include <GL/glew.h> //Has to be included before QGLWidget
 #include <memory>
 #include <mutex>
+#include <chrono>
 #include <QGLWidget>
 #include "Simulation.hpp"
 #include "DrawPlain.hpp"
@@ -93,6 +94,7 @@ protected:
     DrawArrows draw_arrows;
     DrawLIC draw_lic;
     DrawingRoutine* drawing_routine;
+	std::chrono::time_point<std::chrono::high_resolution_clock> timestamp;
 };
 }
 #endif // FELDRAND__OPENGL_WIDGET_HPP
