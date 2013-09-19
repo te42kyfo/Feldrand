@@ -48,6 +48,9 @@ namespace Feldrand {
 		void read_data(std::istream& src);
 		
 	private:
+		void setFields(const size_t ix, const size_t iy, 
+					   const float* val, const int type);
+
 		CLKernel* getVelocityKernel;
 		CLKernel* getDensityKernel;
 		CLKernel* simulationStepKernel;

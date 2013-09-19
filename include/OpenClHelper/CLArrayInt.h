@@ -78,8 +78,11 @@ public:
         onHost = true;                
     }
     void copyToDevice() {
-        assert( onHost && !onDevice );
-        devicearray = clCreateBuffer(openclhelper->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int) * N, (void *)hostarray, &error);
+		assert( onHost );
+		if( onDevice ) {
+			deleteFromDevice();
+		}   
+     devicearray = clCreateBuffer(openclhelper->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int) * N, (void *)hostarray, &error);
         openclhelper->checkError(error);
         onDevice = true;
 //        cout << "allocated device array of " << N << " floats" << endl;

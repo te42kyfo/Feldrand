@@ -39,15 +39,15 @@ namespace Feldrand {
 		};
 
 		const float source[] = {
-			1.1f/36.0f, 1.1f/9.0f, 1.1f/36.0f,
-			1.1f/9.0f,  3.5f/9.0f, 1.1f/9.0f,
-			1.1f/36.0f, 1.1f/9.0f, 1.1f/36.0f
+			1.5f/36.0f, 1.5f/9.0f, 1.5f/36.0f,
+			1.5f/9.0f,  3.5f/9.0f, 1.5f/9.0f,
+			1.5f/36.0f, 1.5f/9.0f, 1.5f/36.0f
 		};
 
 		const float drain[] = {
-			0.9f/36.0f, 0.9f/9.0f, 0.9f/36.0f,
-			0.9f/9.0f,   4.5f/9.0f, 0.9f/9.0f,
-			0.9f/36.0f, 0.9f/9.0f, 0.9f/36.0f
+			0.4f/36.0f, 0.4f/9.0f, 0.4f/36.0f,
+			0.4f/9.0f,   4.5f/9.0f, 0.4f/9.0f,
+			0.4f/36.0f, 0.4f/9.0f, 0.4f/36.0f
 		};
 
 	}
@@ -141,55 +141,38 @@ namespace Feldrand {
 		}
 	}
 
+	void BGK_OCL::setFields(const size_t ix, const size_t iy, 
+							const float* val, const int type) {
+		for( size_t i = 0; i < 9; i++) {
+			(*(src[i]))[iy*gridWidth + ix] = val[i];
+			(*(dst[i]))[iy*gridWidth + ix] = val[i];
+		}
+		(*flag_field)[iy*gridWidth + ix] = type;		
+	}	
+
 
 	void BGK_OCL::do_clear() {
-		for( size_t t = 0; t < 2; t++) {
-			for( size_t i = 0; i < 9; i++) {
-				if( src[i]->isOnDevice() ) {
-					src[i]->copyToHost();
-					src[i]->deleteFromDevice();
-				}
-
-				for(size_t iy = 0; iy < gridHeight; ++iy) {
-					for(size_t ix = 0; ix < gridWidth; ++ix) {
-						(*(src[i]))[iy*gridWidth + ix] = fluid[i];
-					}
-				}
-
-				for(size_t iy = 0; iy < gridHeight; ++iy) {
-					(*(src[i]))[iy*gridWidth ] = source[i];
-					(*(src[i]))[iy*gridWidth + gridWidth -1] = drain[i];
-				}
-				
-				
-				src[i]->moveToDevice();
-
-			}
-			for( size_t i = 0; i < 9; i++) {
-				std::swap(src[i], dst[i]);
-			}
-		}
-
 		for(size_t iy = 0; iy < gridHeight; ++iy) {
 			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				(*flag_field)[iy*gridWidth + ix] = (int) cell_type::FLUID;
+				setFields(ix, iy, fluid, (int) cell_type::FLUID);
 			}
 		}
-
+		
 		for(size_t iy = 0; iy < gridHeight; ++iy) {
-			(*flag_field)[iy*gridWidth] = (int) cell_type::SOURCE;
-			(*flag_field)[iy*gridWidth + gridWidth-1] = (int) cell_type::SOURCE;
+			setFields(0,           iy, source,  (int) cell_type::SOURCE);
+			setFields(gridWidth-1, iy, drain, (int) cell_type::SOURCE);
 		}
-
+		
 		for(size_t ix = 0; ix < gridWidth; ++ix) {
-			(*flag_field)[ ix] = (int) cell_type::NO_SLIP;
-			(*flag_field)[(gridHeight-1)*gridWidth + ix] = 
-				(int) cell_type::NO_SLIP;
+			setFields(ix, 0,            fluid, (int) cell_type::NO_SLIP);
+			setFields(ix, gridHeight-1, fluid, (int) cell_type::NO_SLIP);
 		}
-
-
-		flag_field->moveToDevice();
-
+		for(size_t i = 0; i < 9;i++) {
+			dst[i]->copyToDevice();
+			src[i]->copyToDevice();
+		}
+		
+		flag_field->copyToDevice();
 	}
 
 	void BGK_OCL::do_draw(int x, int y,

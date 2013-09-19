@@ -78,7 +78,10 @@ public:
         onHost = true;                
     }
     void copyToDevice() {
-        assert( onHost && !onDevice );
+        assert( onHost );
+		if( onDevice ) {
+			deleteFromDevice();
+		}
         devicearray = clCreateBuffer(openclhelper->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(float) * N, (void *)hostarray, &error);
         openclhelper->checkError(error);
         onDevice = true;

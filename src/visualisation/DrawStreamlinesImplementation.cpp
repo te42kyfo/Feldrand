@@ -28,6 +28,7 @@ namespace Feldrand {
 	namespace {
 		const size_t LINE_COUNT = 300;
 		const size_t BORDER_PADDING = 3;
+		const float LINE_WIDTH = 0.8;
 	}
 
 void
@@ -112,8 +113,8 @@ addVertices( vector<float>& vertices,
 	normal.x *= -1;
 	normal.normalize();
 	
-	Vec2D<float> p1 = point + normal*0.2;
-	Vec2D<float> p2 = point - normal*0.2;
+	Vec2D<float> p1 = point + normal*LINE_WIDTH;
+	Vec2D<float> p2 = point - normal*LINE_WIDTH;
 	
 	
 	for( int i = 0; i < 2; i++) {

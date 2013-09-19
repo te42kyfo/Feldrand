@@ -277,23 +277,34 @@ void Simulation::SimulationImplementation::
 advance() {
     ++ts_id;
 
-
     handle_requests();
 
     using namespace std::chrono;
     microseconds given_time(2000); // TODO calculate this properly
-    milliseconds compute_time =
-		duration_cast<milliseconds>(high_resolution_clock::now() - timestamp);
-    timestamp = high_resolution_clock::now();
+   
+
+	if( ts_id % 10 == 0) {
+		milliseconds compute_time =
+			duration_cast<milliseconds>(high_resolution_clock::now() - timestamp);
+		
+
+		std::cout  << "" 
+				   <<  (gridHeight*gridWidth*10*10) / 
+			(compute_time.count()-100) *1.0e-3
+				   << "  MLup/s \n";
+		std::cout.flush();
+		timestamp = high_resolution_clock::now();
+	}
 	
+
     while(pause) {
         this_thread::sleep_for(given_time);
         handle_requests();
     }
 	this_thread::sleep_for( milliseconds(100) );
 
-	std::cout  << "\r" <<  compute_time.count() << " ms  ";
-	std::cout.flush();
+	
+
 
 
 }

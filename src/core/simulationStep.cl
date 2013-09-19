@@ -139,19 +139,36 @@ kernel void simulationStep(int width, int height,
 		
 		float usquare = ux*ux+uy*uy;
 	
+		float f1 = 3.0f;
+		float f2 = 9.0f/2.0f;
+		float f3 = 3.0f/2.0f;
+		float diag = 1.0f/36.0f;
+		float axis = 1.0f/9.0f;
+		float center = 4.0f/9.0f;
 		
-		
-		
+		float eq[9];
 
-		for( size_t i = 0; i < 9; i++) {
-		
-			float dot = dirs[i][0]*ux + dirs[i][1]*uy;		
-			float eq = 	weights[i] * rho * (  1.0f
-											  + 3.0f*dot
-											  + 9.0f/2.0f* dot*dot 
-											  -	3.0f/2.0f * usquare);
+		eq[NW] = 
+			diag * rho * (1.0f + f1*(-ux-uy) + f2*(ux+uy)*(ux+uy) - f3* usquare);
+		eq[N] = 
+			axis * rho * (1.0f + f1*(-uy) + f2*uy*uy - f3* usquare);
+		eq[NE] = 
+			diag * rho * (1.0f + f1*(ux-uy) + f2*(ux-uy)*(ux-uy) - f3* usquare);
+		eq[W] = 
+			axis * rho * (1.0f + f1*(-ux) + f2*ux*ux - f3*usquare);
+		eq[C] = 
+			center * rho * (1.0f - f3*usquare);
+		eq[E] = 
+			axis * rho * (1.0f + f1*(+ux) + f2*ux*ux - f3*usquare);
+		eq[SW] = 
+			diag * rho * (1.0f + f1*(-ux+uy) + f2*(-ux+uy)*(-ux+uy) - f3* usquare);
+		eq[S] = 
+			axis * rho * (1.0f + f1*(uy) + f2*uy*uy - f3* usquare);
+		eq[SE] = 
+			diag * rho * (1.0f + f1*(ux+uy) + f2*(ux+uy)*(ux+uy) - f3* usquare);
 
-			ftemp[i] = src[i][index] - (src[i][index]-eq)/1.9f;		
+		for( size_t i = 0; i < 9;i++) {
+			ftemp[i] = src[i][index] - (src[i][index]-eq[i]) / 0.6;
 		}
 			
 	} else if( flag_field[index] == SRC) { 
