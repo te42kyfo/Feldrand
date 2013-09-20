@@ -39,15 +39,15 @@ namespace Feldrand {
 		};
 
 		const float source[] = {
-			1.5f/36.0f, 1.5f/9.0f, 1.5f/36.0f,
-			1.5f/9.0f,  3.5f/9.0f, 1.5f/9.0f,
-			1.5f/36.0f, 1.5f/9.0f, 1.5f/36.0f
+			1.4f/36.0f, 1.4f/9.0f, 1.4f/36.0f,
+			1.4f/9.0f,  3.0F/9.0f, 1.4f/9.0f,
+			1.4f/36.0f, 1.4f/9.0f, 1.4f/36.0f
 		};
 
 		const float drain[] = {
-			0.4f/36.0f, 0.4f/9.0f, 0.4f/36.0f,
-			0.4f/9.0f,   4.5f/9.0f, 0.4f/9.0f,
-			0.4f/36.0f, 0.4f/9.0f, 0.4f/36.0f
+			0.6f/36.0f, 0.6f/9.0f, 0.6f/36.0f,
+			0.6f/9.0f,   5.0f/9.0f, 0.6f/9.0f,
+			0.6f/36.0f, 0.6f/9.0f, 0.6f/36.0f
 		};
 
 	}
@@ -68,7 +68,8 @@ namespace Feldrand {
 		  getVelocityKernel(NULL),
 		  getDensityKernel(NULL),
 		  simulationStepKernel(NULL),
-		  vel( grid_width*grid_height*2 )
+		  vel( grid_width*grid_height*2 ),
+		  density( grid_width*grid_height)
 	{
 
 	}
@@ -171,18 +172,61 @@ namespace Feldrand {
 			dst[i]->copyToDevice();
 			src[i]->copyToDevice();
 		}
-		
+
+		for( size_t i = 0; i < gridHeight/5; i++) {
+			setFields( gridWidth/10.0, 
+					   i + gridHeight*2.0/5.0,
+					   fluid, (int) cell_type::NO_SLIP);
+		}
 		flag_field->copyToDevice();
 	}
 
 	void BGK_OCL::do_draw(int x, int y,
 						  shared_ptr<const Grid<mask_t>> mask_ptr,
 						  cell_t type) {
+		int cx = x;
+		int cy = y;
 
+
+		for(size_t i = 0; i < 9;i++) {
+			if( !dst[i]->isOnHost()) 
+				dst[i]->copyToHost();
+			if( !src[i]->isOnHost()) 
+				src[i]->copyToHost();
+		}
+		if( !flag_field->isOnHost()) 
+			flag_field->copyToHost();	
+
+		const Grid<mask_t>& mask = *(mask_ptr);
+
+		int upper_left_x = cx - (mask.x() / 2);
+		int upper_left_y = cy - (mask.y() / 2);
+		for(size_t iy = 0; iy < mask.y(); ++iy) {
+			for(size_t ix = 0; ix < mask.x(); ++ix) {
+				int sx = upper_left_x + ix;
+				int sy = upper_left_y + iy;
+				if(sx < 0 || sx >= (int)gridWidth ||
+				   sy < 0 || sy >= (int)gridHeight) continue;
+
+				if(mask_t::IGNORE == mask(ix, iy)) continue;
+				if( type == cell_t::OBSTACLE &&
+					(*flag_field)[sy*gridWidth+sx] == (int) cell_type::FLUID) {
+					setFields(sx, sy, fluid, (int) cell_type::NO_SLIP);
+				}
+				if( type == cell_t::FLUID &&
+					(*flag_field)[sy*gridWidth+sx] == (int) cell_type::NO_SLIP) {
+					setFields(sx, sy, fluid, (int) cell_type::FLUID);
+				}
+			}
+		}
+	   	for(size_t i = 0; i < 9;i++) {
+			dst[i]->copyToDevice();
+			src[i]->copyToDevice();
+		}
+		flag_field->copyToDevice();	
 	}
 
 	auto BGK_OCL::get_velocity_grid() -> Grid<Vec2D<float>>* {
-
 
 		if( getVelocityKernel == NULL) return NULL;
 
@@ -207,12 +251,24 @@ namespace Feldrand {
 	}
 
 	auto BGK_OCL::get_density_grid()  -> Grid<float>* {
+		if( getDensityKernel == NULL) return NULL;
+
+		for( size_t i = 0; i < 9; i++) {
+			getDensityKernel->input( src[i] );
+		}
+
+		getDensityKernel->output( density.size(), density.data() );
+		getDensityKernel->input( (int) gridWidth );
+		getDensityKernel->input( (int) gridHeight );
+
+		getDensityKernel->run(2, global_size, local_size );
+
 		Grid<float>* g(new Grid<float>(gridWidth, gridHeight));
 		for(size_t iy = 0; iy < gridHeight; ++iy) {
 			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				(*g)(ix, iy) = 1.0 / vel[iy * gridWidth*2 +ix*2];
+				(*g)(ix, iy) = density[iy * gridWidth +ix];
 			}
-		}
+		}		
 		return g;
 	}
 

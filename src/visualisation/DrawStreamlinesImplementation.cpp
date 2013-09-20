@@ -28,7 +28,7 @@ namespace Feldrand {
 	namespace {
 		const size_t LINE_COUNT = 300;
 		const size_t BORDER_PADDING = 3;
-		const float LINE_WIDTH = 0.8;
+		const float LINE_WIDTH = 0.4;
 	}
 
 void
@@ -121,7 +121,7 @@ addVertices( vector<float>& vertices,
 		colors.push_back( color.redF() );
 		colors.push_back( color.greenF() );
 		colors.push_back( color.blueF() );
-		colors.push_back( 100.0/LINE_COUNT );
+		colors.push_back( 70.0/LINE_COUNT );
 	}
 	
 	vertices.push_back(p1.x  );
@@ -172,7 +172,7 @@ drawStreamline(Vec2D<float> point,
 	Vec2D<float> last_point = gridpoint;
 
 	bool early_exit = false;
-	for(size_t i = 0; i < 600 && early_exit == false; i++) {
+	for(size_t i = 0; i < 1200 && early_exit == false; i++) {
 
 		Vec2D<float> v1 = interpolate( vector_field,
 									   { gridpoint.x / (vector_field.x()-1), 
@@ -190,7 +190,7 @@ drawStreamline(Vec2D<float> point,
 		v2 *= dir;
 
 		v1 = (v1 + v2)/2.0;
-		if( v1.x*v1.x+v1.y*v1.y < 0.00001)
+		if( v1.x*v1.x+v1.y*v1.y < 0.0000001)
 			early_exit = true;
 
 		gridpoint = step( gridpoint, v1);
@@ -215,7 +215,7 @@ drawStreamline(Vec2D<float> point,
 		v1 = interpolate(vector_field, point);
 		v1 = v1.normalize();
 		v1 *= dir;
-		if( early_exit || (gridpoint-last_point).normalize() * v1 < 0.9999) {
+		if( early_exit || (gridpoint-last_point).normalize() * v1 < 0.99995) {
 
 			addVertices( vertices,
 						 colors,

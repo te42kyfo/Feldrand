@@ -265,7 +265,7 @@ void Simulation::SimulationImplementation::
 loop() {
 	init();
 	while(!join) {
-		for( size_t n = 0; n < 10; n++) {
+		for( size_t n = 0; n < 2; n++) {
 			one_iteration();
 		}
 

@@ -38,7 +38,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       draw_lic(width()/2.0, height()/2.0),
       drawing_routine(&draw_arrows)
 {
-    circle_mask = createCircleMask(20);
+    circle_mask = createCircleMask(30);
     onIdle();
 }
 

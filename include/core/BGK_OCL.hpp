@@ -63,7 +63,7 @@ namespace Feldrand {
 		size_t local_size[2];
 
 		std::vector<float> vel;
-		
+		std::vector<float> density;
 	};
 }
 #endif // FELDRAND__BGK_OCL_HPP
