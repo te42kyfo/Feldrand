@@ -17,7 +17,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "core/BGK_OCL.hpp"
 #include <sys/types.h>
-
+#include <sys/time.h>
 
 using namespace std;
 
@@ -40,7 +40,7 @@ namespace Feldrand {
 
 		const float source[] = {
 			1.4f/36.0f, 1.4f/9.0f, 1.4f/36.0f,
-			1.4f/9.0f,  3.0F/9.0f, 1.4f/9.0f,
+			1.4f/9.0f,  3.0f/9.0f, 1.4f/9.0f,
 			1.4f/36.0f, 1.4f/9.0f, 1.4f/36.0f
 		};
 
@@ -124,8 +124,19 @@ namespace Feldrand {
 
 	}
 
-
+double dtime() {
+	double tseconds = 0;
+	struct timeval t;
+	gettimeofday( &t, NULL);
+	tseconds = (double) t.tv_sec + (double) t.tv_usec*1.0e-6;
+	return tseconds;
+}
+	
 	void BGK_OCL::one_iteration() {
+		double start = dtime();
+		
+		const size_t iters = 1000;
+		for( size_t iter = 0; iter < iters; iter++) {
 		simulationStepKernel->input( (int) gridWidth);
 		simulationStepKernel->input( (int) gridHeight);
 		for(size_t i = 0; i < 9; i++) {
@@ -140,6 +151,24 @@ namespace Feldrand {
 		for( size_t i = 0; i < 9; i++) {
 			std::swap(src[i], dst[i]);
 		}
+		}
+		simulationStepKernel->finishPending();
+
+		double end = dtime();
+		
+		double duration = end-start;
+
+		std::cout  << gridHeight*gridWidth << "  " 
+				   << (gridHeight*gridWidth*iters) / 
+		    duration *1.0e-6
+				   << "  MLup/s  "
+				   <<  (gridHeight*gridWidth*2*9*4*iters) / 
+			duration *1.0e-9
+				   << " GByte/s\n";
+
+		std::cout.flush();		
+
+
 	}
 
 	void BGK_OCL::setFields(const size_t ix, const size_t iy, 

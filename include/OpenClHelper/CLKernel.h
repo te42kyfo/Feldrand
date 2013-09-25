@@ -159,8 +159,8 @@ public:
                 exit(-1);
         }
         openclhelper->checkError(error);
-//        error = clFinish(openclhelper->queue);
-//        openclhelper->checkError(error);
+		//error = clFinish(openclhelper->queue);
+        //openclhelper->checkError(error);
     //}
 
     //void retrieveresultsandcleanup() {
@@ -183,5 +183,10 @@ public:
         inputArgFloats.clear();
         nextArg = 0;
     }
+
+	void finishPending() {
+		error = clFinish(openclhelper->queue);		
+		openclhelper->checkError(error);
+	}
 };
 

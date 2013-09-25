@@ -59,6 +59,7 @@ kernel void simulationStep(int width, int height,
 	src[SW] = srcSW;
 	src[S] = srcS;
 	src[SE] = srcSE;
+
 	
 
     const int globalx = get_global_id(0);
@@ -68,6 +69,9 @@ kernel void simulationStep(int width, int height,
 
 	if( globalx < 0 || globalx >= width || 
 		globaly < 0 || globaly >= height ) return;
+
+	
+
 
 	int dir_indices[9];
 	dir_indices[NW] = index - width - 1;
