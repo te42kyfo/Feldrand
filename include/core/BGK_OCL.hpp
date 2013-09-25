@@ -19,7 +19,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #define FELDRAND__BGK_OCL_HPP
 
 #include "core/SimulationImplementation.hpp"
-#include "cell_type.hpp"
 #include "OpenClHelper/OpenCLHelper.h"
 #include "OpenClHelper/CLKernel.h"
 
