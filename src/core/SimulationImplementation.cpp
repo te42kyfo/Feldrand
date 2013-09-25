@@ -265,7 +265,7 @@ void Simulation::SimulationImplementation::
 loop() {
 	init();
 	while(!join) {
-		for( size_t n = 0; n < 2; n++) {
+		for( size_t n = 0; n < 3; n++) {
 			one_iteration();
 		}
 
@@ -289,7 +289,7 @@ advance() {
 		
 
 		std::cout  << "" 
-				   <<  (gridHeight*gridWidth*10*10) / 
+				   <<  (gridHeight*gridWidth*3*10) / 
 			(compute_time.count()-100) *1.0e-3
 				   << "  MLup/s \n";
 		std::cout.flush();
