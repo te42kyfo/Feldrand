@@ -135,7 +135,7 @@ double dtime() {
 	void BGK_OCL::one_iteration() {
 		double start = dtime();
 		
-		const size_t iters = 1000;
+		const size_t iters = 100;
 		for( size_t iter = 0; iter < iters; iter++) {
 		simulationStepKernel->input( (int) gridWidth);
 		simulationStepKernel->input( (int) gridHeight);

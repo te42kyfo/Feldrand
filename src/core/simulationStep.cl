@@ -70,7 +70,10 @@ kernel void simulationStep(int width, int height,
 	if( globalx < 0 || globalx >= width || 
 		globaly < 0 || globaly >= height ) return;
 
-	
+	for( size_t i = 0; i < 9; i++) {
+		dest[i][index] = src[i][index]*1.1;
+	}
+	return;
 
 
 	int dir_indices[9];
