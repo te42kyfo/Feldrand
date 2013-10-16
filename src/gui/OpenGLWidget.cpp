@@ -35,7 +35,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
 						  QGL::DepthBuffer), parent),
       draw_streamlines(),
       draw_arrows(),
-      draw_lic(width()/2.0, height()/2.0),
+      draw_lic(width(), height()),
       drawing_routine(&draw_arrows)
 {
     circle_mask = createCircleMask(30);
@@ -126,7 +126,7 @@ OpenGLWidget::initializeGL()
 
     glEnable(GL_BLEND);
     glLineWidth(1.0);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 
@@ -210,12 +210,14 @@ OpenGLWidget::draw() {
     sim->beginMultiple();
     auto v = sim->get<Grid<Vec2D<float>>*>(Simulation::Data::velocity_grid);
     auto d = sim->get<Grid<float>*>(Simulation::Data::density_grid);
-    auto t = sim->get<Grid<cell_t>*>(Simulation::Data::type_grid);
+    //auto t = sim->get<Grid<cell_t>*>(Simulation::Data::type_grid);
     sim->endMultiple();
 
     vel_ptr = shared_ptr<const Grid<Vec2D<float>>>((Grid<Vec2D<float>>*)v);
     dens_ptr = shared_ptr<const Grid<float>>((Grid<float>*)d);
     return redraw();
+
+    
 }
 
 bool
@@ -262,7 +264,7 @@ void
 OpenGLWidget::onIdle() {
     updateGL();
     // every 33ms -> roughly 30fps
-    QTimer::singleShot( 50, this, SLOT(onIdle()));
+    QTimer::singleShot( 10, this, SLOT(onIdle()));
 }
 
 

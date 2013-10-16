@@ -26,9 +26,9 @@ namespace Feldrand {
 
 
 	namespace {
-		const size_t LINE_COUNT = 300;
+		const size_t LINE_COUNT = 800;
 		const size_t BORDER_PADDING = 3;
-		const float LINE_WIDTH = 0.4;
+		const float LINE_WIDTH = 0.6;
 	}
 
 void
@@ -45,24 +45,8 @@ operator()(const Grid<Vec2D<float>>& vector_field,
 
 	srand( 23123);
     for(size_t i = 0; i < LINE_COUNT; ++i) {
-        
-		int ry = sqrt( (float) LINE_COUNT / vector_field.x() *vector_field.y());
-		int rx = sqrt( (float) LINE_COUNT / vector_field.y() *vector_field.x());
-		
-		ry += (ry == 0) ? 1 : 0;
-		rx += (rx == 0) ? 1 : 0;
- 
-		// generate qusirandom point, more uniform distribution
-        size_t ix = ((i+1)%rx) * (vector_field.x()-BORDER_PADDING*2)/(rx+1) + 
-			BORDER_PADDING + vector_field.x()/(sqrt(LINE_COUNT)+1)-
-			(rand() % (int) (vector_field.x()/(sqrt(LINE_COUNT)+1)));
-
-		size_t iy = ((i+1)/rx)*(vector_field.y()-BORDER_PADDING*2)/(ry+1) + 
-			BORDER_PADDING + vector_field.y()/(sqrt(LINE_COUNT)+1) -
-			(rand() % (int) (vector_field.y()/(sqrt(LINE_COUNT)+1)));
-
-        Vec2D<float> point((float)ix / (float)vector_field.x(),
-                     (float)iy / (float)vector_field.y());
+		Vec2D<float> point( (float) (rand() % 1000) / 1000.0,
+							(float) (rand() % 1000) / 1000.0 );
 		seeds.push_back(point);
 
 	}
@@ -172,7 +156,7 @@ drawStreamline(Vec2D<float> point,
 	Vec2D<float> last_point = gridpoint;
 
 	bool early_exit = false;
-	for(size_t i = 0; i < 1200 && early_exit == false; i++) {
+	for(size_t i = 0; i < vector_field.x()*3 && early_exit == false; i++) {
 
 		Vec2D<float> v1 = interpolate( vector_field,
 									   { gridpoint.x / (vector_field.x()-1), 

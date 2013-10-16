@@ -270,8 +270,7 @@ loop() {
 	init();
 	while(!join) {
 
-		
-		for( size_t n = 0; n < 7; n++) {
+		for( size_t n = 0; n < 1; n++) {
 			one_iteration();
 		}
 		
@@ -294,8 +293,6 @@ advance() {
         this_thread::sleep_for(given_time);
         handle_requests();
     }
-	this_thread::sleep_for( milliseconds(100) );
-
 }
 
 

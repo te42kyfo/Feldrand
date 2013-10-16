@@ -84,37 +84,11 @@ namespace Feldrand {
 	}
 
 
-double dtime() {
-	double tseconds = 0;
-	struct timeval t;
-	gettimeofday( &t, NULL);
-	tseconds = (double) t.tv_sec + (double) t.tv_usec*1.0e-6;
-	return tseconds;
-}
-
 
 	void MRT_LBM::one_iteration() {
-		double start = dtime();
-		
-		const size_t iters = 1000;
-		for( size_t iter = 0; iter < iters; iter++) {		
 			collide();
 			stream();
 			Grid<Cell>::swap(src, dest);
-		}
-		double end = dtime();
-		
-		double duration = end-start;
-
-		std::cout  << gridHeight*gridWidth << "  " 
-				   << (gridHeight*gridWidth*iters) / 
-			duration *1.0e-6
-				   << "  MLup/s  "
-				   <<  (gridHeight*gridWidth*2*9*4*iters) / 
-			duration *1.0e-9
-				   << " GByte/s\n";
-
-		std::cout.flush();		
 
 	}
 

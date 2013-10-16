@@ -17,7 +17,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "core/BGK_OCL.hpp"
 #include <sys/types.h>
-
+#include <sys/time.h>
 
 using namespace std;
 
@@ -28,9 +28,10 @@ namespace Feldrand {
 	namespace {
 		enum class cell_type : int {
 			FLUID = 0,
-			NO_SLIP = 1,
-			SOURCE = 2
-		};
+				NO_SLIP = 1,
+				SOURCE = 2,
+                COPY = 3
+				};
 
 		const float fluid[] = {
 			1.0f/36.0f, 1.0f/9.0f, 1.0f/36.0f,
@@ -125,8 +126,19 @@ namespace Feldrand {
 	}
 
 
+
+
+double dtime() {
+	double tseconds = 0;
+	struct timeval t;
+	gettimeofday( &t, NULL);
+	tseconds = (double) t.tv_sec + (double) t.tv_usec*1.0e-6;
+	return tseconds;
+}
+
 	
 	void BGK_OCL::one_iteration() {
+
 		
 		simulationStepKernel->input( (int) gridWidth);
 		simulationStepKernel->input( (int) gridHeight);
@@ -142,158 +154,157 @@ namespace Feldrand {
 		for( size_t i = 0; i < 9; i++) {
 			std::swap(src[i], dst[i]);
 		}
-		
-				
+		simulationStepKernel->finishPending();
+
 	}
-
-	void BGK_OCL::setFields(const size_t ix, const size_t iy, 
-							const float* val, const int type) {
-		for( size_t i = 0; i < 9; i++) {
-			(*(src[i]))[iy*gridWidth + ix] = val[i];
-			(*(dst[i]))[iy*gridWidth + ix] = val[i];
-		}
-		(*flag_field)[iy*gridWidth + ix] = type;		
-	}	
-
-
-	void BGK_OCL::do_clear() {
-		for(size_t iy = 0; iy < gridHeight; ++iy) {
-			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				setFields(ix, iy, fluid, (int) cell_type::FLUID);
-			}
-		}
-		
-		for(size_t iy = 0; iy < gridHeight; ++iy) {
-			setFields(0,           iy, source,  (int) cell_type::SOURCE);
-			setFields(gridWidth-1, iy, drain, (int) cell_type::SOURCE);
-		}
-		
-		for(size_t ix = 0; ix < gridWidth; ++ix) {
-			setFields(ix, 0,            fluid, (int) cell_type::NO_SLIP);
-			setFields(ix, gridHeight-1, fluid, (int) cell_type::NO_SLIP);
-		}
-		for(size_t i = 0; i < 9;i++) {
-			dst[i]->copyToDevice();
-			src[i]->copyToDevice();
-		}
-
-		for( size_t i = 0; i < gridHeight/5; i++) {
-			setFields( gridWidth/10.0, 
-					   i + gridHeight*2.0/5.0,
-					   fluid, (int) cell_type::NO_SLIP);
-		}
-		flag_field->copyToDevice();
-	}
-
-	void BGK_OCL::do_draw(int x, int y,
-						  shared_ptr<const Grid<mask_t>> mask_ptr,
-						  cell_t type) {
-		int cx = x;
-		int cy = y;
+    void BGK_OCL::setFields(const size_t ix, const size_t iy, 
+                            const float* val, const int type) {
+        for( size_t i = 0; i < 9; i++) {
+            (*(src[i]))[iy*gridWidth + ix] = val[i];
+            (*(dst[i]))[iy*gridWidth + ix] = val[i];
+        }
+        (*flag_field)[iy*gridWidth + ix] = type;		
+    }	
 
 
-		for(size_t i = 0; i < 9;i++) {
-			if( !dst[i]->isOnHost()) 
-				dst[i]->copyToHost();
-			if( !src[i]->isOnHost()) 
-				src[i]->copyToHost();
-		}
-		if( !flag_field->isOnHost()) 
-			flag_field->copyToHost();	
-
-		const Grid<mask_t>& mask = *(mask_ptr);
-
-		int upper_left_x = cx - (mask.x() / 2);
-		int upper_left_y = cy - (mask.y() / 2);
-		for(size_t iy = 0; iy < mask.y(); ++iy) {
-			for(size_t ix = 0; ix < mask.x(); ++ix) {
-				int sx = upper_left_x + ix;
-				int sy = upper_left_y + iy;
-				if(sx < 0 || sx >= (int)gridWidth ||
-				   sy < 0 || sy >= (int)gridHeight) continue;
-
-				if(mask_t::IGNORE == mask(ix, iy)) continue;
-				if( type == cell_t::OBSTACLE &&
-					(*flag_field)[sy*gridWidth+sx] == (int) cell_type::FLUID) {
-					setFields(sx, sy, fluid, (int) cell_type::NO_SLIP);
-				}
-				if( type == cell_t::FLUID &&
-					(*flag_field)[sy*gridWidth+sx] == (int) cell_type::NO_SLIP) {
-					setFields(sx, sy, fluid, (int) cell_type::FLUID);
+		void BGK_OCL::do_clear() {
+			for(size_t iy = 0; iy < gridHeight; ++iy) {
+				for(size_t ix = 0; ix < gridWidth; ++ix) {
+					setFields(ix, iy, fluid, (int) cell_type::FLUID);
 				}
 			}
-		}
-	   	for(size_t i = 0; i < 9;i++) {
-			dst[i]->copyToDevice();
-			src[i]->copyToDevice();
-		}
-		flag_field->copyToDevice();	
-	}
-
-	auto BGK_OCL::get_velocity_grid() -> Grid<Vec2D<float>>* {
-
-		if( getVelocityKernel == NULL) return NULL;
-
-		for( size_t i = 0; i < 9; i++) {
-			getVelocityKernel->input( src[i] );
-		}
-
-		getVelocityKernel->output( vel.size(), vel.data() );
-		getVelocityKernel->input( (int) gridWidth );
-		getVelocityKernel->input( (int) gridHeight );
-
-		getVelocityKernel->run(2, global_size, local_size );
-
-		Grid<Vec2D<float>>* g(new Grid<Vec2D<float>>(gridWidth, gridHeight));
-		for(size_t iy = 0; iy < gridHeight; ++iy) {
-			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				(*g)(ix, iy) = Vec2D<float> { vel[iy * gridWidth*2 +ix*2],
-											  vel[iy * gridWidth*2 +ix*2 +1] };
+		
+			for(size_t iy = 0; iy < gridHeight; ++iy) {
+				setFields(0,           iy, source,  (int) cell_type::SOURCE);
+				setFields(gridWidth-1, iy, drain, (int) cell_type::COPY);
 			}
-		}
-		return g;
-	}
-
-	auto BGK_OCL::get_density_grid()  -> Grid<float>* {
-		if( getDensityKernel == NULL) return NULL;
-
-		for( size_t i = 0; i < 9; i++) {
-			getDensityKernel->input( src[i] );
-		}
-
-		getDensityKernel->output( density.size(), density.data() );
-		getDensityKernel->input( (int) gridWidth );
-		getDensityKernel->input( (int) gridHeight );
-
-		getDensityKernel->run(2, global_size, local_size );
-
-		Grid<float>* g(new Grid<float>(gridWidth, gridHeight));
-		for(size_t iy = 0; iy < gridHeight; ++iy) {
+		
 			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				(*g)(ix, iy) = density[iy * gridWidth +ix];
+				setFields(ix, 0,            fluid, (int) cell_type::NO_SLIP);
+				setFields(ix, gridHeight-1, fluid, (int) cell_type::NO_SLIP);
 			}
-		}		
-		return g;
-	}
+			for(size_t i = 0; i < 9;i++) {
+				dst[i]->copyToDevice();
+				src[i]->copyToDevice();
+			}
 
-	auto BGK_OCL::get_type_grid()     -> Grid<cell_t>* {
-		Grid<cell_t>* g(new Grid<cell_t>(gridWidth, gridHeight));
-		for(size_t iy = 0; iy < gridHeight; ++iy) {
-			for(size_t ix = 0; ix < gridWidth; ++ix) {
-				(*g)(ix, iy) = cell_t::FLUID;
+			for( size_t i = 0; i < gridHeight/5; i++) {
+				setFields( gridWidth/10.0, 
+						   i + gridHeight*2.0/5.0,
+						   fluid, (int) cell_type::NO_SLIP);
 			}
+			flag_field->copyToDevice();
 		}
-		return g;
+
+		void BGK_OCL::do_draw(int x, int y,
+							  shared_ptr<const Grid<mask_t>> mask_ptr,
+							  cell_t type) {
+			int cx = x;
+			int cy = y;
+
+
+			for(size_t i = 0; i < 9;i++) {
+				if( !dst[i]->isOnHost()) 
+					dst[i]->copyToHost();
+				if( !src[i]->isOnHost()) 
+					src[i]->copyToHost();
+			}
+			if( !flag_field->isOnHost()) 
+				flag_field->copyToHost();	
+
+			const Grid<mask_t>& mask = *(mask_ptr);
+
+			int upper_left_x = cx - (mask.x() / 2);
+			int upper_left_y = cy - (mask.y() / 2);
+			for(size_t iy = 0; iy < mask.y(); ++iy) {
+				for(size_t ix = 0; ix < mask.x(); ++ix) {
+					int sx = upper_left_x + ix;
+					int sy = upper_left_y + iy;
+					if(sx < 0 || sx >= (int)gridWidth ||
+					   sy < 0 || sy >= (int)gridHeight) continue;
+
+					if(mask_t::IGNORE == mask(ix, iy)) continue;
+					if( type == cell_t::OBSTACLE &&
+						(*flag_field)[sy*gridWidth+sx] == (int) cell_type::FLUID) {
+						setFields(sx, sy, fluid, (int) cell_type::NO_SLIP);
+					}
+					if( type == cell_t::FLUID &&
+						(*flag_field)[sy*gridWidth+sx] == (int) cell_type::NO_SLIP) {
+						setFields(sx, sy, fluid, (int) cell_type::FLUID);
+					}
+				}
+			}
+			for(size_t i = 0; i < 9;i++) {
+				dst[i]->copyToDevice();
+				src[i]->copyToDevice();
+			}
+			flag_field->copyToDevice();	
+		}
+
+		auto BGK_OCL::get_velocity_grid() -> Grid<Vec2D<float>>* {
+
+			if( getVelocityKernel == NULL) return NULL;
+
+			for( size_t i = 0; i < 9; i++) {
+				getVelocityKernel->input( src[i] );
+			}
+
+			getVelocityKernel->output( vel.size(), vel.data() );
+			getVelocityKernel->input( (int) gridWidth );
+			getVelocityKernel->input( (int) gridHeight );
+
+			getVelocityKernel->run(2, global_size, local_size );
+
+			Grid<Vec2D<float>>* g(new Grid<Vec2D<float>>(gridWidth, gridHeight));
+			for(size_t iy = 0; iy < gridHeight; ++iy) {
+				for(size_t ix = 0; ix < gridWidth; ++ix) {
+					(*g)(ix, iy) = Vec2D<float> { vel[iy * gridWidth*2 +ix*2],
+												  vel[iy * gridWidth*2 +ix*2 +1] };
+				}
+			}
+			return g;
+		}
+
+		auto BGK_OCL::get_density_grid()  -> Grid<float>* {
+			if( getDensityKernel == NULL) return NULL;
+
+			for( size_t i = 0; i < 9; i++) {
+				getDensityKernel->input( src[i] );
+			}
+
+			getDensityKernel->output( density.size(), density.data() );
+			getDensityKernel->input( (int) gridWidth );
+			getDensityKernel->input( (int) gridHeight );
+
+			getDensityKernel->run(2, global_size, local_size );
+
+			Grid<float>* g(new Grid<float>(gridWidth, gridHeight));
+			for(size_t iy = 0; iy < gridHeight; ++iy) {
+				for(size_t ix = 0; ix < gridWidth; ++ix) {
+					(*g)(ix, iy) = density[iy * gridWidth +ix];
+				}
+			}		
+			return g;
+		}
+
+		auto BGK_OCL::get_type_grid()     -> Grid<cell_t>* {
+			Grid<cell_t>* g(new Grid<cell_t>(gridWidth, gridHeight));
+			for(size_t iy = 0; iy < gridHeight; ++iy) {
+				for(size_t ix = 0; ix < gridWidth; ++ix) {
+					(*g)(ix, iy) = cell_t::FLUID;
+				}
+			}
+			return g;
+		}
+
+		void BGK_OCL::write_data(std::ostream& dest) {
+
+		}
+
+		void BGK_OCL::read_data(std::istream& src) {
+
+		}
+
+
+
 	}
-
-	void BGK_OCL::write_data(std::ostream& dest) {
-
-	}
-
-	void BGK_OCL::read_data(std::istream& src) {
-
-	}
-
-
-
-}
