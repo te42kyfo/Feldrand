@@ -26,9 +26,9 @@ namespace Feldrand {
 
 
 	namespace {
-		const size_t LINE_COUNT = 800;
+		const size_t LINE_COUNT = 100;
 		const size_t BORDER_PADDING = 3;
-		const float LINE_WIDTH = 0.6;
+		const float LINE_WIDTH = 1;
 	}
 
 void
@@ -199,7 +199,7 @@ drawStreamline(Vec2D<float> point,
 		v1 = interpolate(vector_field, point);
 		v1 = v1.normalize();
 		v1 *= dir;
-		if( early_exit || (gridpoint-last_point).normalize() * v1 < 0.99995) {
+		if( early_exit || (gridpoint-last_point).normalize() * v1 < 0.99999) {
 
 			addVertices( vertices,
 						 colors,
@@ -210,7 +210,7 @@ drawStreamline(Vec2D<float> point,
 										  point),
 						 z);
 			last_point = gridpoint;
-		}
+        }
 
 
     }

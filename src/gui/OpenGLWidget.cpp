@@ -276,8 +276,8 @@ OpenGLWidget::takeScreenshot() {
 
 	// the thingy we use to write files
 	FILE * shot;
-	size_t width = 16000;
-	size_t height = 16000;
+	size_t width = 8000;
+	size_t height = 8000;
 
 
 
