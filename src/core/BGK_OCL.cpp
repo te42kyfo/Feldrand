@@ -126,8 +126,6 @@ namespace Feldrand {
 	}
 
 
-
-
 double dtime() {
 	double tseconds = 0;
 	struct timeval t;
@@ -139,7 +137,6 @@ double dtime() {
 	
 	void BGK_OCL::one_iteration() {
 
-		
 		simulationStepKernel->input( (int) gridWidth);
 		simulationStepKernel->input( (int) gridHeight);
 		for(size_t i = 0; i < 9; i++) {
@@ -154,6 +151,7 @@ double dtime() {
 		for( size_t i = 0; i < 9; i++) {
 			std::swap(src[i], dst[i]);
 		}
+
 		simulationStepKernel->finishPending();
 
 	}
@@ -245,6 +243,7 @@ double dtime() {
 
 			if( getVelocityKernel == NULL) return NULL;
 
+
 			for( size_t i = 0; i < 9; i++) {
 				getVelocityKernel->input( src[i] );
 			}
@@ -255,12 +254,14 @@ double dtime() {
 
 			getVelocityKernel->run(2, global_size, local_size );
 
+
 			Grid<Vec2D<float>>* g(new Grid<Vec2D<float>>(gridWidth, gridHeight));
 			for(size_t iy = 0; iy < gridHeight; ++iy) {
 				for(size_t ix = 0; ix < gridWidth; ++ix) {
 					(*g)(ix, iy) = Vec2D<float> { vel[iy * gridWidth*2 +ix*2],
 												  vel[iy * gridWidth*2 +ix*2 +1] };
 				}
+
 			}
 			return g;
 		}

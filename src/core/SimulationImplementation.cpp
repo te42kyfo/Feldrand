@@ -22,12 +22,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <chrono>
 #include <iostream>
 #include <sstream>
-
 #include <stdexcept>
 #include <functional>
 #include "core/SimulationImplementation.hpp"
 #include "config.hpp"
-
 
 using namespace std;
 
@@ -263,19 +261,17 @@ endMultiple() {
     //multiple_mutex.unlock();
 }
 
-
+const size_t iters = 5;
 
 void Simulation::SimulationImplementation::
 loop() {
 	init();
 	while(!join) {
-
-		for( size_t n = 0; n < 1; n++) {
+		for( size_t n = 0; n < iters; n++) {
 			one_iteration();
 		}
-		
+
 		advance();
-	
     }
 }
 
@@ -288,6 +284,19 @@ advance() {
     using namespace std::chrono;
     microseconds given_time(2000); // TODO calculate this properly
    
+
+	
+	milliseconds compute_time =
+		duration_cast<milliseconds>(high_resolution_clock::now() - timestamp);
+	
+	/*std::cout  << "" 
+			   <<  (gridHeight*gridWidth*iters) / 
+		(compute_time.count()-100) *1.0e-3
+		<< "  MLup/s \n";*/
+	//std::cout.flush();
+	timestamp = high_resolution_clock::now();
+	
+	
 
     while(pause) {
         this_thread::sleep_for(given_time);

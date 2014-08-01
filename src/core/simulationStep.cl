@@ -209,6 +209,7 @@ kernel void simulationStep(int width, int height,
     }
 
     return;
+
 }
 
 
