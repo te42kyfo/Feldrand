@@ -53,6 +53,9 @@ namespace Feldrand {
 		size_t grid_width = (width / height) * grid_height;
 		return Simulation{width, height, grid_width, grid_height};
 	}
+    Simulation Simulation::create_from_image(std::string filename) {
+        return Simulation(filename);
+	}
 
 	Simulation::Simulation(double width /*in meters*/,
 						   double height /*in meters*/,
@@ -61,6 +64,9 @@ namespace Feldrand {
 		:impl(new SimulationType(width, height,
 						  grid_width,
 						  grid_height)) {}
+
+    Simulation::Simulation(std::string filename)
+		:impl(new SimulationType(filename)) {}
 
 	Simulation::Simulation()
 		:impl(new SimulationType()) {}
@@ -176,7 +182,7 @@ namespace Feldrand {
 	std::istream& operator>>(std::istream& src, Simulation::Data& what) {
 		string s;
 		src >> s;
-		
+
 		// TODO
 		return src;
 	}

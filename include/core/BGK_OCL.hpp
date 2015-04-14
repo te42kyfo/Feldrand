@@ -25,10 +25,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 namespace Feldrand {
 
-	
+
 	class BGK_OCL : public Simulation::SimulationImplementation {
 	public:
 		BGK_OCL();
+        BGK_OCL(std::string filename);
 		BGK_OCL(double width, double height,
 				size_t grid_width, size_t grid_height);
 		BGK_OCL(BGK_OCL& other);
@@ -57,10 +58,12 @@ namespace Feldrand {
 		CLArrayFloat* dst[9];
 		CLArrayFloat* src[9];
 		CLArrayInt* flag_field;
-		
+
 		size_t global_size[2];
 		size_t local_size[2];
 
+        std::vector<unsigned char> image;
+      
 		std::vector<float> vel;
 		std::vector<float> density;
 	};

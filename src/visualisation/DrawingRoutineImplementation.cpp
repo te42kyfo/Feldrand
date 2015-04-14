@@ -28,7 +28,7 @@ DrawingRoutineImplementation() {
     tolerance = 0.01f;
     mono_color = {  124, 124, 124};
     min_color  = QColor::fromHsvF(0.66, 1.0, 1.0);
-    max_color  = QColor::fromHsvF(0.1, 1.0, 1.0);
+    max_color  = QColor::fromHsvF(0.0, 1.0, 1.0);
     use_color_mono = false;
     use_color_scalar = false;
     use_color_vec_abs = true;

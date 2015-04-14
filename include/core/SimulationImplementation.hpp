@@ -53,6 +53,7 @@ namespace Feldrand {
 								 double height /*in meters*/,
 								 size_t grid_width,
 								 size_t grid_height);
+        SimulationImplementation(std::string filename);
 	public: // TODO copy operator
 		SimulationImplementation(const SimulationImplementation& other);
 		virtual ~SimulationImplementation();

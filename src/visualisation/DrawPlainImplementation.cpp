@@ -38,7 +38,7 @@ void DrawPlainImplementation::operator()(const Grid<Vec2D<float>>& vector_field,
     size_t height = vector_field.y() - 1;
     float iwidth = 1.0f / (float)width;
     float iheight = 1.0f / (float)height;
-    float texture[width * height * 3]; // TODO forbidden in ISO C++
+    vector<float> texture(width * height * 3);
     calibrateColor(vector_field, scalar_field);
     for(size_t iy = 0; iy < height; ++iy) {
         for(size_t ix = 0; ix < width; ++ix) {
@@ -60,7 +60,7 @@ void DrawPlainImplementation::operator()(const Grid<Vec2D<float>>& vector_field,
     glBindTexture( GL_TEXTURE_2D, t);
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
                   width, height,
-                  0, GL_RGB, GL_FLOAT, texture);
+                  0, GL_RGB, GL_FLOAT, texture.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

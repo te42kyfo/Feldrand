@@ -83,7 +83,10 @@ public:
                                     size_t grid_width);
     static Simulation create_dwdhgh(double domain_width, double domain_height,
                                     size_t grid_heigth);
+    static Simulation create_from_image( std::string filename);
+  
 protected:
+    Simulation(std::string filename);
     Simulation(double domain_width, double domain_height,
                size_t grid_width, size_t grid_height);
 public:

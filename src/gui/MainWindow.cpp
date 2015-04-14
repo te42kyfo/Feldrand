@@ -36,7 +36,7 @@ namespace Feldrand {
 
 MainWindow::MainWindow() {
 
-    sim = make_shared<Simulation>(Simulation::create_dwdhgt(13.66, 8, 40000));
+    sim = make_shared<Simulation>(Simulation::create_from_image("./ce.png"));
 
     sim->action(Simulation::Action::run);
 

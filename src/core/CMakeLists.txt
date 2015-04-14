@@ -3,6 +3,7 @@ include_directories(${FELDRAND_INCLUDE_DIR})
 find_package(CLEW REQUIRED)
 
 add_library(feldrand SHARED
+  lodepng.cc
   MRT_LBM.cpp
   BGK_OCL.cpp
   SimulationImplementation.cpp

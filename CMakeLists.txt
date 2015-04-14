@@ -23,13 +23,14 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 
   # Set up additional build flags for particular build types. These will be added to CMAKE_CXX_FLAGS,
   # they will not replace them.
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fopenmp -DNDEBUG -DQT_NO_DEBUG_OUTPUT -Wl,-s ${CMAKE_CXX_FLAGS_WARN}")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fopenmp -DNDEBUG -DQT_NO_DEBUG_OUTPUT -fsanitize=address -fsanitize=undefined -Wl,-s ${CMAKE_CXX_FLAGS_WARN}")
   set(CMAKE_CXX_FLAGS_NATIVE "-O3 -fopenmp -DNDEBUG -DQT_NO_DEBUG_OUTPUT -march=native -Wl,-s ${CMAKE_CXX_FLAGS_WARN}")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fno-inline ${CMAKE_CXX_FLAGS_WARN}")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fno-inline -fsanitize=address -fsanitize=undefined ${CMAKE_CXX_FLAGS_WARN}")
   set(CMAKE_CXX_FLAGS_PROFILE "-O2 -g -pg ${CMAKE_CXX_FLAGS_WARN}")
   set(CMAKE_LD_FLAGS_PROFILE "-O2 -g -pg")
 endif()
 
+set(CMAKE_LD_FLAGS "-fsanitize=address -fsanitize=undefined")
 
 
 
