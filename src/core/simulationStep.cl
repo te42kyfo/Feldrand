@@ -142,12 +142,12 @@ kernel void simulationStep(int width, int height,
 
         float usquare = ux*ux+uy*uy;
 
-        float f1 = 3.0f;
-        float f2 = 9.0f/2.0f;
-        float f3 = 3.0f/2.0f;
-        float diag = 1.0f/36.0f;
-        float axis = 1.0f/9.0f;
-        float center = 4.0f/9.0f;
+        const float f1 = 3.0f;
+        const float f2 = 9.0f/2.0f;
+        const float f3 = 3.0f/2.0f;
+        const float diag = 1.0f/36.0f;
+        const float axis = 1.0f/9.0f;
+        const float center = 4.0f/9.0f;
 
         float eq[9];
 
@@ -171,7 +171,7 @@ kernel void simulationStep(int width, int height,
             diag * rho * (1.0f + f1*(ux+uy) + f2*(ux+uy)*(ux+uy) - f3* usquare);
 
         for( size_t i = 0; i < 9;i++) {
-            ftemp[i] = src[i][index] - (src[i][index]-eq[i]) / 0.56f;
+            ftemp[i] = src[i][index] - (src[i][index]-eq[i]) * 1.15f;
         }
 
     } else if( flag_field[index] == SRC) {

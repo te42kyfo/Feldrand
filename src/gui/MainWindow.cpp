@@ -36,7 +36,7 @@ namespace Feldrand {
 
 MainWindow::MainWindow() {
 
-    sim = make_shared<Simulation>(Simulation::create_from_image("./ce.png"));
+    sim = make_shared<Simulation>(Simulation::create_from_image("./fau.png"));
 
     sim->action(Simulation::Action::run);
 
